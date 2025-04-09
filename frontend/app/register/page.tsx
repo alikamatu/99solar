@@ -3,52 +3,39 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Lock, Mail, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Lock, Mail, User, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAuth } from '@/app/context/AuthContext';
 
-export default function LoginPage() {
+export default function RegisterPage() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { setAuth } = useAuth(); 
   const router = useRouter();
 
-  // In your LoginPage component
-const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-  
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include', // Important for cookies
+        body: JSON.stringify({ name, email, password }),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
+        throw new Error(data.error || 'Registration failed');
       }
-  
-      setAuth({
-        isAuthenticated: true,
-        token: data.token,
-        user: data.user,
-      });
-  
-      toast.success('Login successful!');
-      
-      // Redirect based on role
-      router.push(data.user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
-      
+
+      toast.success('Registration successful! Please log in.');
+      router.push('/login');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Login failed');
+      toast.error(error instanceof Error ? error.message : 'Registration failed');
     } finally {
       setIsLoading(false);
     }
@@ -62,34 +49,57 @@ const handleLogin = async (e: React.FormEvent) => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <motion.div
-          className="bg-white rounded-2xl shadow-xl overflow-hidden"
-        >
+        <motion.div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="p-8">
             <div className="text-center mb-8">
-              <motion.h1 
+              <motion.h1
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
                 className="text-3xl font-bold text-gray-800 mb-2"
               >
-                Welcome Back
+                Create an Account
               </motion.h1>
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
                 className="text-gray-600"
               >
-                Sign in to your account
+                Sign up to get started
               </motion.p>
             </div>
 
-            <form onSubmit={handleLogin}>
+            <form onSubmit={handleRegister}>
               <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 }}
+                className="mb-6"
+              >
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Your Name"
+                    required
+                  />
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
                 className="mb-6"
               >
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -114,7 +124,7 @@ const handleLogin = async (e: React.FormEvent) => {
               <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: 0.6 }}
                 className="mb-8"
               >
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
@@ -126,36 +136,20 @@ const handleLogin = async (e: React.FormEvent) => {
                   </div>
                   <input
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="••••••••"
                     required
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-500" />
-                    ) : (
-                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
-                    )}
-                  </button>
-                </div>
-                <div className="mt-2 text-right">
-                  <a href="#" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                    Forgot password?
-                  </a>
                 </div>
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
+                transition={{ delay: 0.7 }}
               >
                 <button
                   type="submit"
@@ -165,10 +159,10 @@ const handleLogin = async (e: React.FormEvent) => {
                   {isLoading ? (
                     <>
                       <Loader2 className="animate-spin mr-2 h-5 w-5" />
-                      Signing in...
+                      Signing up...
                     </>
                   ) : (
-                    'Sign in'
+                    'Sign up'
                   )}
                 </button>
               </motion.div>
@@ -177,13 +171,13 @@ const handleLogin = async (e: React.FormEvent) => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
+              transition={{ delay: 0.8 }}
               className="mt-6 text-center"
             >
               <p className="text-sm text-gray-600">
-                Don't have an account?{' '}
-                <a href="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-                  Sign up
+                Already have an account?{' '}
+                <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+                  Log in
                 </a>
               </p>
             </motion.div>
@@ -192,12 +186,12 @@ const handleLogin = async (e: React.FormEvent) => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
+            transition={{ delay: 0.9 }}
             className="bg-gray-50 px-8 py-6 border-t border-gray-200"
           >
             <div className="text-center">
               <p className="text-xs text-gray-500">
-                By signing in, you agree to our{' '}
+                By signing up, you agree to our{' '}
                 <a href="#" className="font-medium text-gray-600 hover:text-gray-500">
                   Terms of Service
                 </a>{' '}
