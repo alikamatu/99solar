@@ -11,11 +11,6 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-
-
-
-// filepath: c:\Users\Alikamatu Osama\Documents\GitHub\99solar\solar-backend\controllers\authController.js
-
 exports.register = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
@@ -30,7 +25,7 @@ exports.register = async (req, res) => {
         res.status(500).json({ success: false, error: 'Registration failed' });
     }
 };
-// Login existing user
+
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
@@ -166,31 +161,70 @@ exports.login = async (req, res) => {
     const { token, newPassword } = req.body;
 
     try {
-        // Verify token
+        // 1. Verify token exists
+        if (!token || typeof token !== 'string') {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Token is required' 
+            });
+        }
+
+        // 2. Verify token format (basic check)
+        if (!token.match(/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/)) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Invalid token format' 
+            });
+        }
+
+        // 3. Verify JWT
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        // Check if token exists in database and hasn't expired
+        // 4. Check database for valid token
         const userResult = await pool.query(
             'SELECT * FROM users WHERE id = $1 AND reset_token = $2 AND reset_token_expiry > NOW()',
             [decoded.id, token]
         );
 
         if (userResult.rows.length === 0) {
-            return res.status(400).json({ message: 'Invalid or expired token' });
+            return res.status(400).json({ 
+                success: false,
+                message: 'Invalid or expired token' 
+            });
         }
 
-        // Hash new password
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-        // Update password and clear reset token
+        // 6. Update password and clear token
         await pool.query(
             'UPDATE users SET password = $1, reset_token = NULL, reset_token_expiry = NULL WHERE id = $2',
             [hashedPassword, decoded.id]
         );
 
-        res.status(200).json({ message: 'Password updated successfully' });
+        res.status(200).json({ 
+            success: true,
+            message: 'Password updated successfully' 
+        });
     } catch (error) {
         console.error('Reset password error:', error);
-        res.status(500).json({ message: 'Error resetting password' });
+        
+        if (error.name === 'TokenExpiredError') {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Token has expired' 
+            });
+        }
+        
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Invalid token' 
+            });
+        }
+        
+        res.status(500).json({ 
+            success: false,
+            message: 'Error resetting password' 
+        });
     }
 };
