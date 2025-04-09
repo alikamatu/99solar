@@ -147,7 +147,7 @@ const handleLogin = async (e: React.FormEvent) => {
                   </button>
                 </div>
                 <div className="mt-2 text-right">
-                  <a href="#" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                  <a href="/forgot-password" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
                     Forgot password?
                   </a>
                 </div>
