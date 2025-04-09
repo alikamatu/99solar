@@ -160,29 +160,24 @@ exports.login = async (req, res) => {
   exports.resetPassword = async (req, res) => {
     const { token, newPassword } = req.body;
 
+    // 1. Validate input
+    if (!token || !newPassword) {
+        return res.status(400).json({ 
+            success: false,
+            message: 'Token and new password are required' 
+        });
+    }
+
     try {
-        // 1. Verify token exists
-        if (!token || typeof token !== 'string') {
-            return res.status(400).json({ 
-                success: false,
-                message: 'Token is required' 
-            });
-        }
-
-        // 2. Verify token format (basic check)
-        if (!token.match(/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/)) {
-            return res.status(400).json({ 
-                success: false,
-                message: 'Invalid token format' 
-            });
-        }
-
-        // 3. Verify JWT
+        // 2. Verify JWT token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        // 4. Check database for valid token
+        // 3. Check database for valid token
         const userResult = await pool.query(
-            'SELECT * FROM users WHERE id = $1 AND reset_token = $2 AND reset_token_expiry > NOW()',
+            `SELECT * FROM users 
+             WHERE id = $1 
+             AND reset_token = $2 
+             AND reset_token_expiry > NOW()`,
             [decoded.id, token]
         );
 
@@ -193,36 +188,40 @@ exports.login = async (req, res) => {
             });
         }
 
+        // 4. Update password
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-        // 6. Update password and clear token
         await pool.query(
-            'UPDATE users SET password = $1, reset_token = NULL, reset_token_expiry = NULL WHERE id = $2',
+            `UPDATE users 
+             SET password = $1, 
+                 reset_token = NULL, 
+                 reset_token_expiry = NULL 
+             WHERE id = $2`,
             [hashedPassword, decoded.id]
         );
 
-        res.status(200).json({ 
+        return res.status(200).json({ 
             success: true,
             message: 'Password updated successfully' 
         });
+
     } catch (error) {
         console.error('Reset password error:', error);
         
         if (error.name === 'TokenExpiredError') {
             return res.status(400).json({ 
                 success: false,
-                message: 'Token has expired' 
+                message: 'Reset link has expired' 
             });
         }
         
         if (error.name === 'JsonWebTokenError') {
             return res.status(400).json({ 
                 success: false,
-                message: 'Invalid token' 
+                message: 'Invalid reset link' 
             });
         }
         
-        res.status(500).json({ 
+        return res.status(500).json({ 
             success: false,
             message: 'Error resetting password' 
         });
