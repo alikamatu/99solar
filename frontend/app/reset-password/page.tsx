@@ -12,6 +12,8 @@ export default function ResetPassword() {
     const [isLoading, setIsLoading] = useState(false);
     const [isTokenValid, setIsTokenValid] = useState(false);
     const router = useRouter();
+    const [message, setMessage] = useState("");
+    const [error, setError] = useState("");
 
     useEffect(() => {
         // Properly extract and validate token on component mount
@@ -37,16 +39,19 @@ export default function ResetPassword() {
         
         if (!isTokenValid || !token) {
             toast.error('Invalid reset link');
+            setError('Invalid reset link. Please request a new one.');
             return;
         }
 
         if (password !== confirmPassword) {
             toast.error('Passwords do not match');
+            setError('Passwords do not match');
             return;
         }
 
         if (password.length < 8) {
             toast.error('Password must be at least 8 characters');
+            setError('Password must be at least 8 characters long');
             return;
         }
 
@@ -71,6 +76,7 @@ export default function ResetPassword() {
             }
 
             toast.success('Password reset successfully!');
+            setMessage('Password reset successfully!');
             router.push('/login');
         } catch (error) {
             console.error('Reset password error:', error);
@@ -78,10 +84,13 @@ export default function ResetPassword() {
             if (error instanceof Error) {
                 if (error.message.includes('expired')) {
                     toast.error('Reset link has expired. Please request a new one.');
+                    setError('Reset link has expired. Please request a new one.');
                 } else if (error.message.includes('Invalid token')) {
                     toast.error('Invalid reset link. Please request a new one.');
+                    setError('Invalid reset link. Please request a new one.');
                 } else {
                     toast.error(error.message || 'Failed to reset password');
+                    setError('Failed to reset password. Please try again.');
                 }
             }
         } finally {
@@ -131,7 +140,8 @@ export default function ResetPassword() {
                         />
                         <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters</p>
                     </div>
-                    
+                    {message && <p className="text-center text-green-500 mb-4">{message}</p>}
+                    {error && <p className="text-center text-red-500 mb-4">{error}</p>}
                     <div className="mb-6">
                         <label htmlFor="confirmPassword" className="block text-gray-700 text-sm font-medium mb-2">
                             Confirm New Password

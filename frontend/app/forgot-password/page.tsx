@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 
 export default function ForgotPassword() {
     const [email, setEmail] = useState('');
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState("");
 
     const handlePasswordReset = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -23,9 +25,12 @@ export default function ForgotPassword() {
                 throw new Error(data.message || 'Password reset failed');
             }
 
+            setMessage('Password reset link sent to your email!');
+
             toast.success('Password reset link sent to your email!');
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Password reset failed');
+            setError('Error sending password reset link. Please try again.');
         }
     }
 
@@ -48,7 +53,8 @@ export default function ForgotPassword() {
                             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
-
+                    {message && <p className="text-center text-green-500 mb-4">{message}</p>}
+                    {error && <p className="text-center text-red-500 mb-4">{error}</p>}
                     <button
                         type="submit"
                         className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200"
