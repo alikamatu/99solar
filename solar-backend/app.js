@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/authRouth');
+const fileUploadRoute = require('./routes/fileUpload');
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/files', fileUploadRoute);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -34,7 +36,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 1000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`CORS configured for: ${corsOptions.origin}`);

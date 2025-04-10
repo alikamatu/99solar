@@ -26,7 +26,7 @@ const handleLogin = async (e: React.FormEvent) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
-        credentials: 'include', // Important for cookies
+        credentials: 'include',
       });
   
       const data = await response.json();
