@@ -8,10 +8,11 @@ import { Progress } from '../components/ui/progress';
 import { toast } from '../components/ui/use-toast';
 import axios from 'axios';
 
+// Define interfaces for processed files and errors
 interface ProcessedFile {
   originalName: string;
   processedName: string;
-  downloadLink: string;
+  downloadLink: string; // Always provided by backend as relative path
   size?: string;
 }
 
@@ -20,6 +21,9 @@ interface ProcessingError {
   error: string;
 }
 
+// Base URL for the backend API (matches backend setup)
+const BASE_URL = 'http://localhost:1000'; // No /api prefix as per backend routes
+
 export default function FileManagementPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -27,6 +31,7 @@ export default function FileManagementPage() {
   const [processedFiles, setProcessedFiles] = useState<ProcessedFile[]>([]);
   const [errors, setErrors] = useState<ProcessingError[]>([]);
 
+  // Handle file selection
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
@@ -34,10 +39,12 @@ export default function FileManagementPage() {
     }
   }, []);
 
+  // Remove a specific file from the list
   const handleRemoveFile = useCallback((index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
   }, []);
 
+  // Clear all files and reset state
   const handleClearAll = useCallback(() => {
     setFiles([]);
     setProcessedFiles([]);
@@ -45,6 +52,7 @@ export default function FileManagementPage() {
     setProgress(0);
   }, []);
 
+  // Submit files for processing
   const handleSubmit = async () => {
     if (files.length === 0) {
       toast({
@@ -54,35 +62,34 @@ export default function FileManagementPage() {
       });
       return;
     }
-  
+
     setIsProcessing(true);
     setProgress(0);
     setProcessedFiles([]);
     setErrors([]);
-  
+
     const formData = new FormData();
     files.forEach(file => formData.append('files', file));
-  
+
     try {
-      const response = await axios.post(
-        'http://localhost:1000/api/files/upload',  // Use the external API's URL
-        formData,
-        {
-          responseType: 'json', // Adjust this depending on the external API's response type
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-  
+      const response = await axios.post(`${BASE_URL}/api/files/upload`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
       if (!response.data) {
         throw new Error('No response data from the API');
       }
-  
-      const result = response.data; // Assuming the response is JSON
-  
-      setProcessedFiles(result.processedFiles || []);
-      
+
+      const result = response.data;
+      // Prepend BASE_URL to the relative downloadLink
+      const updatedProcessedFiles = (result.processedFiles || []).map((file: ProcessedFile) => ({
+        ...file,
+        downloadLink: `${BASE_URL}/api/files/downloads/${file.downloadLink}`, // Convert to absolute URL
+      }));
+      setProcessedFiles(updatedProcessedFiles);
+
       if (result.errors?.length > 0) {
         setErrors(result.errors);
         toast({
@@ -96,25 +103,71 @@ export default function FileManagementPage() {
           description: `${result.processedFiles.length} file(s) processed`,
         });
       }
-  
-      // Simulate progress for demo (replace with actual progress events if available)
+
+      // Simulate progress
       const totalSteps = 10;
       for (let i = 1; i <= totalSteps; i++) {
         await new Promise(resolve => setTimeout(resolve, 200));
         setProgress((i / totalSteps) * 100);
       }
-  
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error uploading files:', error);
       toast({
         title: 'Processing failed',
+        description: 'An error occurred while processing your files',
         variant: 'destructive',
       });
     } finally {
       setIsProcessing(false);
     }
   };
+
+  const handleDownload = async (file: ProcessedFile) => {
+    try {
+      // Show loading state
+      setProcessedFiles(prev => prev.map(f => 
+        f.processedName === file.processedName ? { ...f, downloading: true } : f
+      ));
   
+      // Construct the correct download URL
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1000';
+      const downloadUrl = `${apiBaseUrl}/api/files/download/${file.processedName}`;
+  
+      // Fetch the file
+      const response = await axios.get(downloadUrl, {
+        responseType: 'blob',
+      });
+  
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', file.originalName.replace('.csv', '.xlsx'));
+      document.body.appendChild(link);
+      link.click();
+  
+      // Clean up
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 100);
+  
+      toast({
+        title: 'Download started',
+        description: `${file.originalName} is being downloaded`,
+      });
+  
+    } catch (error) {
+      console.error('Download failed:', error);
+    } finally {
+      // Remove loading state
+      setProcessedFiles(prev => prev.map(f => 
+        f.processedName === file.processedName ? { ...f, downloading: false } : f
+      ));
+    }
+  };
+
+  // Format file size for display
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -152,15 +205,8 @@ export default function FileManagementPage() {
                 className="hidden"
                 disabled={isProcessing}
               />
-              <Button 
-                asChild 
-                variant="outline"
-                className="mt-2"
-              >
-                <label 
-                  htmlFor="file-upload" 
-                  className="cursor-pointer flex items-center gap-2"
-                >
+              <Button asChild variant="outline" className="mt-2">
+                <label htmlFor="file-upload" className="cursor-pointer flex items-center gap-2">
                   <FileUp className="w-4 h-4" />
                   Select Files
                 </label>
@@ -186,8 +232,8 @@ export default function FileManagementPage() {
               </div>
               <div className="border rounded-lg divide-y dark:divide-gray-800">
                 {files.map((file, index) => (
-                  <div 
-                    key={`${file.name}-${index}`} 
+                  <div
+                    key={`${file.name}-${index}`}
                     className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
@@ -231,8 +277,8 @@ export default function FileManagementPage() {
               <h3 className="font-medium">Processed Files ({processedFiles.length})</h3>
               <div className="border rounded-lg divide-y dark:divide-gray-800">
                 {processedFiles.map((file, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
                   >
                     <CheckCircle2 className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
@@ -247,10 +293,15 @@ export default function FileManagementPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(file.downloadLink, '_blank')}
+                      onClick={() => handleDownload(file)}
+                      disabled={(file as any).downloading}
                       className="ml-3"
                     >
-                      <Download className="w-4 h-4 mr-2" />
+                      {(file as any).downloading ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Download className="w-4 h-4 mr-2" />
+                      )}
                       Download
                     </Button>
                   </div>
@@ -267,8 +318,8 @@ export default function FileManagementPage() {
               </h3>
               <div className="border border-red-200 dark:border-red-900 rounded-lg divide-y dark:divide-red-900/50 bg-red-50 dark:bg-red-900/10">
                 {errors.map((error, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className="p-3 text-sm text-red-600 dark:text-red-400"
                   >
                     {error.filename ? (

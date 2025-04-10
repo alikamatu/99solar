@@ -103,20 +103,21 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
 });
 
 // Download processed file
-router.get('/downloads/:filename', (req, res) => {
-  const filePath = path.join(__dirname, '..', 'downloads', req.params.filename);
+router.get('/download/:filename', (req, res) => {
+    const downloadDir = path.join(__dirname, '..', 'downloads');
+    const filePath = path.join(downloadDir, req.params.filename);
   
-  if (fs.existsSync(filePath)) {
-    res.download(filePath, (err) => {
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+  
+    res.download(filePath, req.params.filename, (err) => {
       if (err) {
         console.error('Download error:', err);
         res.status(500).json({ error: 'File download failed' });
       }
     });
-  } else {
-    res.status(404).json({ error: 'File not found' });
-  }
-});
+  });
 
 // Helper function to process CSV
 async function processCSV(filePath) {
