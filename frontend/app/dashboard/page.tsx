@@ -32,20 +32,6 @@ export default function DashboardPage() {
             </Card>
           ))}
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat, i) => (
-            <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                <stat.icon className="w-4 h-4 text-gray-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-gray-500">{stat.change} from last month</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
   
         {/* Chart and Activity */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 h-[400px]"> {/* Fixed height */}
