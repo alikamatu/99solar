@@ -14,5 +14,9 @@
     "nodemailer": "^6.10.0",
     "pg": "^8.14.1",
     "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "@types/csv-parse": "^1.1.12",
+    "@types/exceljs": "^0.5.3"
   }
 }
