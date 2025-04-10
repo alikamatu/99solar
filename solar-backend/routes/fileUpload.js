@@ -6,6 +6,7 @@ const ExcelJS = require('exceljs');
 const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
+const AdmZip = require('adm-zip');
 const db = new Pool({ connectionString: process.env.DATABASE_URL });
 
 const router = express.Router();
@@ -173,4 +174,45 @@ async function createExcelFile(data, outputPath) {
   await workbook.xlsx.writeFile(outputPath);
 }
 
+// server/routes/fileUpload.js
+router.get('/download-multiple', async (req, res) => {
+    try {
+      const { filenames } = req.query;
+      
+      if (!filenames) {
+        return res.status(400).json({ error: 'No files specified' });
+      }
+  
+      const fileList = typeof filenames === 'string' ? filenames.split(',') : [];
+      const downloadDir = path.join(__dirname, '..', 'downloads');
+      const zip = new AdmZip();
+  
+      let filesAdded = 0;
+      
+      for (const filename of fileList) {
+        const safeFilename = filename.replace(/[^a-zA-Z0-9\-_.]/g, '');
+        const filePath = path.join(downloadDir, safeFilename);
+        
+        if (fs.existsSync(filePath)) {
+          zip.addLocalFile(filePath);
+          filesAdded++;
+        }
+      }
+  
+      if (filesAdded === 0) {
+        return res.status(404).json({ error: 'None of the requested files were found' });
+      }
+  
+      const zipData = zip.toBuffer();
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', `attachment; filename=processed-files-${Date.now()}.zip`);
+      res.send(zipData);
+  
+    } catch (error) {
+      console.error('Zip creation error:', error);
+      res.status(500).json({ error: 'Failed to create zip archive' });
+    }
+  });
+
+  
 module.exports = router;

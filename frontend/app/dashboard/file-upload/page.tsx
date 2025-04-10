@@ -7,6 +7,9 @@ import { Button } from '../components/ui/button';
 import { Progress } from '../components/ui/progress';
 import { toast } from '../components/ui/use-toast';
 import axios from 'axios';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+
 
 // Define interfaces for processed files and errors
 interface ProcessedFile {
@@ -14,6 +17,7 @@ interface ProcessedFile {
   processedName: string;
   downloadLink: string; // Always provided by backend as relative path
   size?: string;
+  downloading?: boolean;
 }
 
 interface ProcessingError {
@@ -167,6 +171,89 @@ export default function FileManagementPage() {
     }
   };
 
+  const handleDownloadAll = async () => {
+    if (processedFiles.length === 0) return;
+
+    try {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1000';
+      const filenames = processedFiles.map(file => file.processedName);
+      
+      // Method 1: Direct download via iframe (works for most cases)
+      const iframeDownload = () => {
+        const encodedFilenames = encodeURIComponent(filenames.join(','));
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = `${apiBaseUrl}/api/files/download-multiple?filenames=${encodedFilenames}`;
+        document.body.appendChild(iframe);
+        
+        // Cleanup after 10 seconds
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 10000);
+      };
+
+      // Method 2: Client-side zip as fallback
+      const clientSideZipDownload = async () => {
+        const JSZip = (await import('jszip')).default;
+        const { saveAs } = await import('file-saver');
+        
+        const zip = new JSZip();
+        const promises = processedFiles.map(async (file) => {
+          const response = await axios.get(
+            `${apiBaseUrl}/api/files/download/${file.processedName}`,
+            { responseType: 'blob' }
+          );
+          zip.file(file.originalName.replace('.csv', '.xlsx'), response.data);
+        });
+
+        await Promise.all(promises);
+        const content = await zip.generateAsync({ type: 'blob' });
+        saveAs(content, `processed-files-${Date.now()}.zip`);
+      };
+
+      // Method 3: Individual file downloads as last resort
+      const individualDownloads = () => {
+        processedFiles.forEach(file => {
+          const link = document.createElement('a');
+          link.href = `${apiBaseUrl}/api/files/download/${file.processedName}`;
+          link.setAttribute('download', file.originalName.replace('.csv', '.xlsx'));
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        });
+      };
+
+      // Try methods in order
+      try {
+        // First try iframe method
+        iframeDownload();
+        
+        // Set timeout to check if download started
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // If still here, try client-side zip
+        await clientSideZipDownload();
+      } catch (error) {
+        console.error('Bulk download failed, falling back to individual:', error);
+        individualDownloads();
+      }
+
+      toast({
+        title: 'Download initiated',
+        description: `Processing ${processedFiles.length} file(s)`,
+      });
+
+    } catch (error) {
+      console.error('All download methods failed:', error);
+      toast({
+        title: 'Download failed',
+        description: 'Could not download files. Please try again or contact support.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   // Format file size for display
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -275,6 +362,15 @@ export default function FileManagementPage() {
           {processedFiles.length > 0 && (
             <div className="space-y-3">
               <h3 className="font-medium">Processed Files ({processedFiles.length})</h3>
+              <Button
+        variant="outline"
+        size="sm"
+        onClick={handleDownloadAll}
+        disabled={processedFiles.some(f => f.downloading)}
+      >
+        <Download className="w-4 h-4 mr-2" />
+        Download All
+      </Button>
               <div className="border rounded-lg divide-y dark:divide-gray-800">
                 {processedFiles.map((file, index) => (
                   <div
