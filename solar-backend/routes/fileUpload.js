@@ -103,7 +103,7 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
 });
 
 // Download processed file
-router.get('/download/:filename', (req, res) => {
+router.get('/downloads/:filename', (req, res) => {
   const filePath = path.join(__dirname, '..', 'downloads', req.params.filename);
   
   if (fs.existsSync(filePath)) {
