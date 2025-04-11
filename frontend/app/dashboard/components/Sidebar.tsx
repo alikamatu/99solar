@@ -32,10 +32,11 @@ export function Sidebar() {
   }, []);
 
   useEffect(() => {
-    if (isMobile && isOpen) {
+    // Close sidebar when route changes on mobile
+    if (isMobile) {
       setIsOpen(false);
     }
-  }, [pathname, isMobile, isOpen]);
+  }, [pathname]);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -44,7 +45,7 @@ export function Sidebar() {
       {/* Mobile Toggle Button */}
       <button
         onClick={toggleSidebar}
-        className="fixed z-50 p-2 md:hidden bottom-4 right-4 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+        className="fixed z-50 p-2 md:hidden top-12 left-4 bg-gray-200 text-black rounded-full shadow-lg hover:bg-gray-300 transition-colors"
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
@@ -82,13 +83,13 @@ export function Sidebar() {
 
       {/* Mobile Sidebar */}
       <AnimatePresence>
-        {isOpen && isMobile && (
+        {isOpen && (
           <>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-30 bg-black"
+              className="fixed inset-0 z-30 bg-black md:hidden"
               onClick={toggleSidebar}
             />
             <motion.div
@@ -96,7 +97,7 @@ export function Sidebar() {
               animate={{ x: 0 }}
               exit={{ x: -300 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed z-40 flex flex-col w-64 h-full border-r border-gray-200 bg-white shadow-lg"
+              className="fixed z-40 flex flex-col w-64 h-full border-r border-gray-200 bg-white shadow-lg md:hidden"
             >
               <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
                 <h1 className="text-xl font-bold text-gray-900">99 Solar Bid Manager</h1>
