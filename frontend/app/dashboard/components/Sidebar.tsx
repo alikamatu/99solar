@@ -45,7 +45,7 @@ export function Sidebar() {
       {/* Mobile Toggle Button */}
       <button
         onClick={toggleSidebar}
-        className="fixed z-50 p-2 md:hidden top-12 left-4 bg-gray-200 text-black rounded-full shadow-lg hover:bg-gray-300 transition-colors"
+        className="fixed z-50 p-2 md:hidden bottom-8 right-4 bg-gray-200 text-black rounded-full shadow-lg hover:bg-gray-300 transition-colors"
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
@@ -89,7 +89,7 @@ export function Sidebar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-30 bg-black md:hidden"
+              className="flex fixed inset-0 z-40 bg-black md:hidden"
               onClick={toggleSidebar}
             />
             <motion.div
@@ -97,7 +97,7 @@ export function Sidebar() {
               animate={{ x: 0 }}
               exit={{ x: -300 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed z-40 flex flex-col w-64 h-full border-r border-gray-200 bg-white shadow-lg md:hidden"
+              className="fixed z-40 top-0 flex flex-col w-64 h-full border-r border-gray-200 bg-white shadow-lg md:hidden"
             >
               <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
                 <h1 className="text-xl font-bold text-gray-900">99 Solar Bid Manager</h1>
