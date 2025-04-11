@@ -1,7 +1,6 @@
 import { Providers } from './providers';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
-import { Toaster } from './components/ui/toaster';
 import { ToastProvider } from '@radix-ui/react-toast';
 
 

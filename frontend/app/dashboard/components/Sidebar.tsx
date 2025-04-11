@@ -6,11 +6,6 @@ import { Home, FileText, Users, Gavel, Upload, Award, LineChart, Settings, FileI
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Bell, Search, User } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
