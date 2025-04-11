@@ -388,10 +388,10 @@ export default function FileManagementPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleDownload(file)}
-                      disabled={(file as any).downloading}
+                      disabled={file.downloading ?? false} // Replace (file as any).downloading
                       className="ml-3"
                     >
-                      {(file as any).downloading ? (
+                      {file.downloading ? ( // Replace (file as any).downloading
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       ) : (
                         <Download className="w-4 h-4 mr-2" />
