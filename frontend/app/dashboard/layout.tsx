@@ -14,13 +14,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <Providers>
             <ToastProvider>
 
-    <div className="flex">
-      <Sidebar />
-      <div className="flex flex-col flex-1 min-h-0"> {/* Crucial: min-h-0 */}
-        <Header />
-        <main className="flex-1 overflow-auto p-4"> {/* overflow-auto here */}
+            <div className="flex flex-col min-h-screen">
+      <Header />
+      <div className="flex flex-1 pt-16">
+        <Sidebar />
+        <main className="flex-1 p-4 md:ml-64">
           {children}
-          <Toaster />
         </main>
       </div>
     </div>

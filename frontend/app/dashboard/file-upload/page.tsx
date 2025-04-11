@@ -7,8 +7,6 @@ import { Button } from '../components/ui/button';
 import { Progress } from '../components/ui/progress';
 import { toast } from '../components/ui/use-toast';
 import axios from 'axios';
-import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
 
 
 // Define interfaces for processed files and errors

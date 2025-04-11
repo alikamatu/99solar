@@ -1,6 +1,6 @@
 'use client';
 
-import { Activity, FileText, Users, DollarSign, Gavel, Upload } from 'lucide-react';
+import { Users, DollarSign, Gavel, Upload } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { OverviewChart } from '../_components/overview-charts';
 import { RecentActivity } from '../_components/recent-activity';
