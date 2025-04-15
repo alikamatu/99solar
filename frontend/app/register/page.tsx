@@ -52,7 +52,7 @@ const handleRegister = async (e: React.FormEvent) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden p-8 text-center"
+          className="w-full max-w-md bg-white overflow-hidden p-8 text-center"
         >
           <div className="flex justify-center mb-6">
             <CheckCircle className="h-16 w-16 text-green-500" />
@@ -93,7 +93,7 @@ const handleRegister = async (e: React.FormEvent) => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <motion.div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <motion.div className="bg-white overflow-hidden">
           <div className="p-8">
             <div className="text-center mb-8">
               <motion.h1

@@ -54,7 +54,7 @@ export default function LoginPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <motion.div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <motion.div className="bg-white overflow-hidden">
           <div className="p-8">
             <div className="text-center mb-8">
               <motion.h1
@@ -63,7 +63,7 @@ export default function LoginPage() {
                 transition={{ delay: 0.2 }}
                 className="text-3xl font-bold text-gray-800 mb-2"
               >
-                Welcome Back
+                {unverifiedEmail ? 'Verify Your Email' : 'Welcome Back!'}
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0 }}
