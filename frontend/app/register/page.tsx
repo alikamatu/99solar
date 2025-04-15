@@ -11,7 +11,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [verificationSent, setVerificationSent] = useState(false);
+  const [verificationSent] = useState(false);
   const [role] = useState<'customer' | 'admin'>('customer');
   const router = useRouter();
 
@@ -59,12 +59,12 @@ const handleRegister = async (e: React.FormEvent) => {
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Verify Your Email</h2>
           <p className="text-gray-600 mb-6">
-            We've sent a verification link to <span className="font-semibold">{email}</span>.
+            We&apos;ve sent a verification link to <span className="font-semibold">{email}</span>.
             Please click the link to activate your account.
           </p>
           <div className="bg-blue-50 p-4 rounded-lg mb-6">
             <p className="text-sm text-blue-700">
-              Didn't receive the email? Check your spam folder or{' '}
+              Didn&apos;t receive the email? Check your spam folder or{' '}
               <button 
                 onClick={handleRegister}
                 className="text-blue-600 font-medium hover:text-blue-800"

@@ -192,7 +192,7 @@ export default function VerifyEmailPage() {
                 disabled={isLoading || (timeLeft !== null && timeLeft > 0)}
                 className="text-sm text-indigo-600 hover:text-indigo-500 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Didn't receive a code? Resend
+                Didn&apos;t receive a code? Resend
               </button>
             </div>
 

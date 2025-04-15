@@ -5,78 +5,46 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Lock, Mail, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAuth } from '@/app/context/AuthContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { setAuth } = useAuth(); 
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const router = useRouter();
-// In your login page's submit handler
-const handleLogin = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsLoading(true);
 
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-    const data = await response.json();
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (!response.ok) {
-      if (data.needsVerification) {
-        // Show resend verification option
-        setUnverifiedEmail(data.email);
-        throw new Error('Please verify your email first. Check your inbox.');
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.needsVerification) {
+          setUnverifiedEmail(data.email);
+          throw new Error('Please verify your email first. Check your inbox.');
+        }
+        throw new Error(data.error || 'Login failed');
       }
-      throw new Error(data.error || 'Login failed');
+
+      toast.success('Login successful!');
+      router.push('/dashboard');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Login failed');
+    } finally {
+      setIsLoading(false);
     }
-
-    // Handle successful login...
-    toast.success('Login successful!');
-    router.push('/dashboard');
-  } catch (error) {
-    toast.error(error instanceof Error ? error.message : 'Login failed');
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-// Add this to your login form JSX
-{unverifiedEmail && (
-  <div className="bg-blue-50 p-4 rounded-lg mb-6">
-    <p className="text-sm text-blue-700">
-      Didn't receive the verification email?{' '}
-      <button 
-        onClick={async () => {
-          try {
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/resend-verification`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ email: unverifiedEmail }),
-            });
-            toast.success('Verification email resent!');
-          } catch (error) {
-            toast.error('Failed to resend verification email');
-          }
-        }}
-        className="text-blue-600 font-medium hover:text-blue-800"
-      >
-        Resend verification
-      </button>
-    </p>
-  </div>
-)}
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -86,12 +54,10 @@ const handleLogin = async (e: React.FormEvent) => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <motion.div
-          className="bg-white rounded-2xl shadow-xl overflow-hidden"
-        >
+        <motion.div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="p-8">
             <div className="text-center mb-8">
-              <motion.h1 
+              <motion.h1
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
@@ -99,7 +65,7 @@ const handleLogin = async (e: React.FormEvent) => {
               >
                 Welcome Back
               </motion.h1>
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
@@ -205,7 +171,7 @@ const handleLogin = async (e: React.FormEvent) => {
               className="mt-6 text-center"
             >
               <p className="text-sm text-gray-600">
-                Don&apos; t have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <a href="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
                   Sign up
                 </a>

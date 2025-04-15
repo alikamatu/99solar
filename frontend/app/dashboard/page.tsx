@@ -4,7 +4,6 @@ import { Users, DollarSign, Gavel, Upload } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { OverviewChart } from '../_components/overview-charts';
 import { RecentActivity } from '../_components/recent-activity';
-import { QuickActions } from '../_components/quick-actions';
 
 // app/dashboard/page.tsx
 export default function DashboardPage() {
