@@ -54,6 +54,7 @@ export default function DashboardPage() {
         </div>
   
         {/* Quick Actions */}
+        {/* <div className="lg:mt-20">
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
@@ -62,6 +63,7 @@ export default function DashboardPage() {
             <QuickActions />
           </CardContent>
         </Card>
+        </div> */}
       </div>
     );
   }

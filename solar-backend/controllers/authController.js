@@ -2,6 +2,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../models/db');
 const nodemailer = require('nodemailer');
+const { sendVerificationEmail } = require('../utils/email');
+const { v4: uuidv4 } = require('uuid');
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -11,18 +13,65 @@ const transporter = nodemailer.createTransport({
     },
 });
 
+
 exports.register = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
+        
+        // Check if user already exists
+        const userExists = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (userExists.rows.length > 0) {
+            return res.status(400).json({ success: false, error: 'Email already in use' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const verificationToken = uuidv4();
+        
+        // Insert user with verification token and false is_verified status
         const result = await pool.query(
-            'INSERT INTO users (id, name, email, password, role) VALUES (gen_random_uuid(), $1, $2, $3, $4) RETURNING *',
-            [name, email, hashedPassword, role]
+            `INSERT INTO users 
+            (id, name, email, password, role, verification_token, is_verified) 
+            VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6) 
+            RETURNING *`,
+            [name, email, hashedPassword, role, verificationToken, false]
         );
-        res.status(201).json({ success: true, user: result.rows[0] });
+
+        // Send verification email
+        await sendVerificationEmail(email, verificationToken);
+
+        res.status(201).json({ 
+            success: true, 
+            message: 'Registration successful. Please check your email to verify your account.',
+            user: result.rows[0] 
+        });
     } catch (error) {
         console.error('Registration error:', error);
         res.status(500).json({ success: false, error: 'Registration failed' });
+    }
+};
+
+exports.verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.params;
+        
+        // Find user by verification token
+        const result = await pool.query(
+            'UPDATE users SET is_verified = true, verification_token = NULL WHERE verification_token = $1 RETURNING *',
+            [token]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(400).json({ success: false, error: 'Invalid or expired verification token' });
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            message: 'Email verified successfully. You can now log in.',
+            user: result.rows[0] 
+        });
+    } catch (error) {
+        console.error('Email verification error:', error);
+        res.status(500).json({ success: false, error: 'Email verification failed' });
     }
 };
 
