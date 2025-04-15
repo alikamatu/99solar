@@ -1,20 +1,18 @@
--- Users: Both admins and customers
 CREATE TABLE users (
   id UUID PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT UNIQUE NOT NULL,
-  password TEXT NOT NULL, -- Added to store hashed passwords
+  password TEXT NOT NULL,
   role TEXT CHECK (role IN ('admin', 'customer')) NOT NULL,
-  reset_token TEXT, -- Added for password reset functionality
-  reset_token_expiry TIMESTAMP, -- Added for password reset expiration
-  verification_code TEXT, -- Added for email verification
-  code_expires_at TIMESTAMP, -- Added for verification code expiration
-  is_verified BOOLEAN DEFAULT false, -- Added to track email verification status
+  reset_token TEXT,
+  reset_token_expiry TIMESTAMP,
+  verification_code TEXT,
+  code_expires_at TIMESTAMP,
+  is_verified BOOLEAN DEFAULT false,
   created_at TIMESTAMP DEFAULT now(),
-  updated_at TIMESTAMP DEFAULT now() -- Added to track updates
+  updated_at TIMESTAMP DEFAULT now()
 );
 
--- VerizonFiles: Uploaded raw bid data from Verizon
 CREATE TABLE verizon_files (
   id UUID PRIMARY KEY,
   file_name TEXT NOT NULL,
@@ -23,7 +21,6 @@ CREATE TABLE verizon_files (
   cleaned BOOLEAN DEFAULT FALSE
 );
 
--- Lots: Auctioned lots customers bid on
 CREATE TABLE lots (
   id UUID PRIMARY KEY,
   verizon_file_id UUID REFERENCES verizon_files(id),
@@ -32,10 +29,9 @@ CREATE TABLE lots (
   grade TEXT,
   quantity INTEGER,
   base_price NUMERIC(10,2),
-  commission_rate NUMERIC(5,2) DEFAULT 0.10 -- 10%
+  commission_rate NUMERIC(5,2) DEFAULT 0.10
 );
 
--- Bids: Customer-submitted bids for lots
 CREATE TABLE bids (
   id UUID PRIMARY KEY,
   user_id UUID REFERENCES users(id),
@@ -45,7 +41,6 @@ CREATE TABLE bids (
   status TEXT CHECK (status IN ('pending', 'awarded', 'rejected')) DEFAULT 'pending'
 );
 
--- Awarded Bids from Verizon
 CREATE TABLE awarded_bids (
   id UUID PRIMARY KEY,
   lot_id UUID REFERENCES lots(id),
@@ -54,16 +49,12 @@ CREATE TABLE awarded_bids (
   commission NUMERIC(10,2)
 );
 
--- Invoices: One invoice per customer per awarded batch
 CREATE TABLE invoices (
   id UUID PRIMARY KEY,
   user_id UUID REFERENCES users(id),
-  awarded_bid_ids UUID[], -- Array of awarded bids
+  awarded_bid_ids UUID[],
   invoice_number TEXT UNIQUE,
   generated_at TIMESTAMP DEFAULT now(),
   total_amount NUMERIC(10,2),
   pdf_url TEXT
 );
-
-
-psql "dpg-cvv8hnali9vc739vfhj0-a.oregon-postgres.render.com" < schemas/createTables.sql
