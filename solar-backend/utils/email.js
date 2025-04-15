@@ -8,26 +8,23 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-exports.sendVerificationEmail = async (email, token) => {
-    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${token}`;
-    
+exports.sendVerificationEmail = async (email, code) => {
     const mailOptions = {
         from: `"Your App Name" <${process.env.EMAIL_FROM}>`,
         to: email,
-        subject: 'Verify Your Email Address',
+        subject: 'Your Verification Code',
         html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #4f46e5;">Welcome to Our App!</h2>
-                <p>Please click the button below to verify your email address:</p>
-                <a href="${verificationUrl}" 
-                   style="display: inline-block; padding: 12px 24px; background-color: #4f46e5; 
-                          color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                    Verify Email
-                </a>
-                <p>If you didn't create an account, you can safely ignore this email.</p>
+                <h2 style="color: #4f46e5;">Verify Your Email</h2>
+                <p>Your verification code is:</p>
+                <div style="font-size: 24px; font-weight: bold; letter-spacing: 2px; 
+                    margin: 20px 0; padding: 10px 15px; background: #f3f4f6; 
+                    display: inline-block; border-radius: 4px;">
+                    ${code}
+                </div>
+                <p>This code will expire in 15 minutes.</p>
                 <p style="margin-top: 30px; color: #6b7280; font-size: 14px;">
-                    If the button doesn't work, copy and paste this link into your browser:<br>
-                    ${verificationUrl}
+                    If you didn't request this code, you can safely ignore this email.
                 </p>
             </div>
         `

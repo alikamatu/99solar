@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Lock, Mail, User, Loader2 } from 'lucide-react';
+import { Lock, Mail, User, Loader2, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function RegisterPage() {
@@ -11,36 +11,79 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [role] = useState<'customer' | 'admin'>('customer'); // Default to 'user'
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [role] = useState<'customer' | 'admin'>('customer');
   const router = useRouter();
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+ // In your registration page's handleRegister function:
+const handleRegister = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsLoading(true);
 
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, password, role }),
-      });
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name, email, password, role }),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Registration failed');
-      }
-
-      toast.success('Registration successful! Please log in.');
-      router.push('/login');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Registration failed');
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      throw new Error(data.error || 'Registration failed');
     }
-  };
+
+    // Redirect to verification page with email
+    router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+    toast.success('Verification code sent! Check your email.');
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : 'Registration failed');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  if (verificationSent) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden p-8 text-center"
+        >
+          <div className="flex justify-center mb-6">
+            <CheckCircle className="h-16 w-16 text-green-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Verify Your Email</h2>
+          <p className="text-gray-600 mb-6">
+            We've sent a verification link to <span className="font-semibold">{email}</span>.
+            Please click the link to activate your account.
+          </p>
+          <div className="bg-blue-50 p-4 rounded-lg mb-6">
+            <p className="text-sm text-blue-700">
+              Didn't receive the email? Check your spam folder or{' '}
+              <button 
+                onClick={handleRegister}
+                className="text-blue-600 font-medium hover:text-blue-800"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Resending...' : 'Resend verification'}
+              </button>
+            </p>
+          </div>
+          <button
+            onClick={() => router.push('/login')}
+            className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors"
+          >
+            Back to Login
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -143,6 +186,7 @@ export default function RegisterPage() {
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="••••••••"
                     required
+                    minLength={8}
                   />
                 </div>
               </motion.div>

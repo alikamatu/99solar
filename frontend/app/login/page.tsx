@@ -13,47 +13,70 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { setAuth } = useAuth(); 
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const router = useRouter();
-
+// In your login page's submit handler
 const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-  
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include',
-      });
-  
-      const data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
-      }
-  
-      setAuth({
-        isAuthenticated: true,
-        token: data.token,
-        user: data.user,
-      });
+  e.preventDefault();
+  setIsLoading(true);
 
-    localStorage.setItem('isAuthenticated', JSON.stringify(true));
-  
-      toast.success('Login successful!');
-      
-      // Redirect based on role
-      router.push(data.user.role === 'admin' ? '/dashboard' : '/');
-      
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Login failed');
-    } finally {
-      setIsLoading(false);
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      if (data.needsVerification) {
+        // Show resend verification option
+        setUnverifiedEmail(data.email);
+        throw new Error('Please verify your email first. Check your inbox.');
+      }
+      throw new Error(data.error || 'Login failed');
     }
-  };
+
+    // Handle successful login...
+    toast.success('Login successful!');
+    router.push('/dashboard');
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : 'Login failed');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+// Add this to your login form JSX
+{unverifiedEmail && (
+  <div className="bg-blue-50 p-4 rounded-lg mb-6">
+    <p className="text-sm text-blue-700">
+      Didn't receive the verification email?{' '}
+      <button 
+        onClick={async () => {
+          try {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/resend-verification`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ email: unverifiedEmail }),
+            });
+            toast.success('Verification email resent!');
+          } catch (error) {
+            toast.error('Failed to resend verification email');
+          }
+        }}
+        className="text-blue-600 font-medium hover:text-blue-800"
+      >
+        Resend verification
+      </button>
+    </p>
+  </div>
+)}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
