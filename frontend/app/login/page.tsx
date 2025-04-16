@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Lock, Mail, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '../context/AuthContext';
+import { log } from 'console';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -13,6 +15,8 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const router = useRouter();
+  const { setAuth } = useAuth();
+  const [isError, setIsError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,10 +41,24 @@ export default function LoginPage() {
         throw new Error(data.error || 'Login failed');
       }
 
+      setAuth({
+        isAuthenticated: true,
+        token: data.token,
+        user: data.user,
+      });
+
+      console.log('User data:', data.user);
+      console.log('Token:', data.token);
+      
+
+      localStorage.setItem('isAuthenticated', JSON.stringify(true));
+
       toast.success('Login successful!');
-      router.push('/dashboard');
+      router.push(data.user.role === 'admin' ? '/dashboard' : '/');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Login failed');
+      setIsError("Invalid email or password");
+      console.error('Login error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -135,7 +153,8 @@ export default function LoginPage() {
                     )}
                   </button>
                 </div>
-                <div className="mt-2 text-right">
+                <div className="mt-2 text-right flex justify-between items-center">
+                  <p className='text-red-700'>{isError}</p>
                   <a href="/forgot-password" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
                     Forgot password?
                   </a>
