@@ -10,6 +10,7 @@ interface AuthState {
     name: string;
     email: string;
     role: 'user' | 'admin';
+    is_verified: boolean;
   } | null;
 }
 

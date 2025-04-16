@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import { Lock, Mail, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
-import { log } from 'console';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -32,6 +31,8 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
+      console.log('Login response:', data);
+      
 
       if (!response.ok) {
         if (data.needsVerification) {
@@ -48,12 +49,10 @@ export default function LoginPage() {
       });
 
       console.log('User data:', data.user);
-      console.log('Token:', data.token);
       
 
       localStorage.setItem('isAuthenticated', JSON.stringify(true));
 
-      toast.success('Login successful!');
       router.push(data.user.role === 'admin' ? '/dashboard' : '/');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Login failed');
