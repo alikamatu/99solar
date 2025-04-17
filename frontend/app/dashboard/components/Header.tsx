@@ -3,6 +3,8 @@
 import { Bell, Search } from 'lucide-react';
 import {
   DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -16,7 +18,7 @@ export function Header() {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
             <Input
-              className="pl-10"
+              className="pl-10 focus:outline-none"
               placeholder="Search..."
               type="search"
             />
@@ -36,7 +38,7 @@ export function Header() {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            {/* <DropdownMenuContent className="w-56" align="end" forceMount>
+            {/* <DropdownMenuContent className="w-56 bg-white border rounded shadow" align="end" forceMount>
               <DropdownMenuItem>Profile</DropdownMenuItem>
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem className="text-red-600">Log out</DropdownMenuItem>

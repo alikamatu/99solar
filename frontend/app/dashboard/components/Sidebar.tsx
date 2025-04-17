@@ -16,7 +16,7 @@ const navItems = [
   { name: 'Award Management', href: '/award-management', icon: Award },
   { name: 'Invoicing', href: '/invoicing', icon: FileInput },
   { name: 'Reports', href: '/reports', icon: LineChart },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
 export function Sidebar() {

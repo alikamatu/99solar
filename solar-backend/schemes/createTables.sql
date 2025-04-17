@@ -30,6 +30,16 @@ CREATE TABLE lots (
   quantity INTEGER,
   base_price NUMERIC(10,2),
   commission_rate NUMERIC(5,2) DEFAULT 0.10
+  oem VARCHAR(50),
+  sku VARCHAR(50),
+  prop65_warning VARCHAR(255),
+  description TEXT,
+  disposition VARCHAR(10) CHECK (disposition IN ('DNB', 'DNC', 'DNA')), -- Enforcing allowed statuses
+  unit_awarded_price NUMERIC(10, 2),
+  available_from TIMESTAMP WITH TIME ZONE,
+  available_to TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE bids (
@@ -39,6 +49,8 @@ CREATE TABLE bids (
   bid_amount NUMERIC(10,2),
   submitted_at TIMESTAMP DEFAULT now(),
   status TEXT CHECK (status IN ('pending', 'awarded', 'rejected')) DEFAULT 'pending'
+  bid_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT unique_bid UNIQUE(user_id, lot_id) -- Ensure one active bid per user per lot if required
 );
 
 CREATE TABLE awarded_bids (
@@ -57,4 +69,15 @@ CREATE TABLE invoices (
   generated_at TIMESTAMP DEFAULT now(),
   total_amount NUMERIC(10,2),
   pdf_url TEXT
+);
+
+CREATE TABLE email_notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    subject VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    notification_type VARCHAR(50), -- E.g., 'invitation', 'bid_update', 'reminder'
+    is_sent BOOLEAN DEFAULT FALSE,
+    sent_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
