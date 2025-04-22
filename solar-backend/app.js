@@ -4,6 +4,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/authRouth');
 const fileUploadRoute = require('./routes/fileUpload');
 const lotRoute = require('./routes/lotRoute');
+const bidRoute = require('./routes/bidRoute');
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(express.json());
 // app.use('/api/auth', authRoutes);
 app.use('/api/files', fileUploadRoute);
 app.use('/api/lots', lotRoute);
+app.use('/api/bids', bidRoute);
 
 
 // Health check endpoint
