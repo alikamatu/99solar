@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+const pool = require('../models/db');
+
 
 module.exports = (req, res, next) => {
   const auth = req.headers.authorization;
@@ -13,3 +15,41 @@ module.exports = (req, res, next) => {
     res.status(403).json({ error: 'Invalid or expired token' });
   }
 };
+
+
+const authenticate = async (req, res, next) => {
+  try {
+    const token = req.cookies.token || req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    const userQuery = await pool.query(
+      'SELECT id, role FROM users WHERE id = $1',
+      [decoded.id]
+    );
+
+    if (userQuery.rows.length === 0) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    req.user = userQuery.rows[0];
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
+const authorize = (roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+    next();
+  };
+};
+
+module.exports = { authenticate, authorize };

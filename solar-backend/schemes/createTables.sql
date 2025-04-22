@@ -34,7 +34,7 @@ CREATE TABLE lots (
   sku VARCHAR(50),
   prop65_warning VARCHAR(255),
   description TEXT,
-  disposition VARCHAR(10) CHECK (disposition IN ('DNB', 'DNC', 'DNA')), -- Enforcing allowed statuses
+  disposition VARCHAR(10) CHECK (disposition IN ('DNB', 'DNC', 'DNA')),
   unit_awarded_price NUMERIC(10, 2),
   available_from TIMESTAMP WITH TIME ZONE,
   available_to TIMESTAMP WITH TIME ZONE,

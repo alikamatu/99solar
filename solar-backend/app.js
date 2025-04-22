@@ -18,6 +18,7 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/files', fileUploadRoute);
+app.use('/api/lots', require('./routes/lotRoutes'));
 
 // Health check endpoint
 app.get('/health', (req, res) => {

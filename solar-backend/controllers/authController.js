@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken');
 const pool = require('../models/db');
 const nodemailer = require('nodemailer');
 const { sendVerificationEmail } = require('../utils/email');
-const { v4: uuidv4 } = require('uuid');
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
