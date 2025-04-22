@@ -3,7 +3,7 @@ const csv = require('csv-parser');
 const { v4: uuidv4 } = require('uuid');
 const pool = require('../models/db');
 
-const processVerizonCSV = async (filename, filePath, uploadedBy) => {
+exports.processVerizonCSV = async (filename, filePath, uploadedBy) => {
   const fileId = uuidv4();
   const client = await pool.connect();
   
@@ -72,5 +72,3 @@ const processVerizonCSV = async (filename, filePath, uploadedBy) => {
     });
   }
 };
-
-module.exports = { processVerizonCSV };
