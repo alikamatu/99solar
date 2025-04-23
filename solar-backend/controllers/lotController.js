@@ -2,18 +2,20 @@ const pool = require('../models/db');
 const { processVerizonCSV } = require('../utils/csvProcessor');
 const { sendBidInvitations } = require('../utils/email');
 
- exports.uploadLots = async (req, res) => {
+exports.uploadLots = async (req, res) => {
   try {
+    const userId = req.body.userId || req.user?.id; // Use userID from body or req.user
+    console.log("User ID:", userId);
+
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
     const { filename, path } = req.file;
-    const uploadedBy = req.user.id;
 
-    const { fileId, lotCount } = await processVerizonCSV(filename, path, uploadedBy);
+    const { fileId, lotCount } = await processVerizonCSV(filename, path, userId);
 
-    await sendBidInvitations(fileId);
+    // await sendBidInvitations(fileId);
 
     res.status(201).json({
       message: `${lotCount} lots uploaded successfully`,

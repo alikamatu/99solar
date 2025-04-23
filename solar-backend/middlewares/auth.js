@@ -1,10 +1,12 @@
 const jwt = require('jsonwebtoken');
 const pool = require('../models/db');
 
-
-module.exports = (req, res, next) => {
+// Middleware to verify token and attach user to request
+const verifyToken = (req, res, next) => {
   const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing token' });
+  if (!auth || !auth.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing token' });
+  }
 
   try {
     const token = auth.split(' ')[1];
@@ -16,17 +18,16 @@ module.exports = (req, res, next) => {
   }
 };
 
-
 const authenticate = async (req, res, next) => {
   try {
     const token = req.cookies.token || req.header('Authorization')?.replace('Bearer ', '');
-    
+
     if (!token) {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
     const userQuery = await pool.query(
       'SELECT id, role FROM users WHERE id = $1',
       [decoded.id]
@@ -43,13 +44,15 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-const authorize = (roles) => {
-  return (req, res, next) => {
-    if (!req.user || !roles.includes(req.user.role)) {
-      return res.status(403).json({ error: 'Unauthorized' });
-    }
-    next();
-  };
-};
+// // Middleware to authorize user based on roles
+// const authorize = (roles) => {
+//   return (req, res, next) => {
+//     if (!req.user || !roles.includes(req.user.role)) {
+//       return res.status(403).json({ error: 'Unauthorized' });
+//     }
+//     next();
+//   };
+// };
 
-module.exports = { authenticate, authorize };
+// Export all middleware functions
+module.exports = { verifyToken, authenticate };

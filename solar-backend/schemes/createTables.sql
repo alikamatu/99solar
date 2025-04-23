@@ -21,6 +21,15 @@ CREATE TABLE verizon_files (
   cleaned BOOLEAN DEFAULT FALSE
 );
 
+CREATE TABLE uploaded_files (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    filename TEXT NOT NULL,
+	  processed_name TEXT,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
 CREATE TABLE lots (
   id UUID PRIMARY KEY,
   verizon_file_id UUID REFERENCES verizon_files(id),

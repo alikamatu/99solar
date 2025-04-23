@@ -18,7 +18,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/files', fileUploadRoute);
 app.use('/api/lots', lotRoute);
 app.use('/api/bids', bidRoute);

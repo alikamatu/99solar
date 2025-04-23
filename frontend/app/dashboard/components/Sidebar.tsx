@@ -10,12 +10,12 @@ import { useState, useEffect } from 'react';
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'File Management', href: '/dashboard/file-upload', icon: FileText },
-  { name: 'Customer Bidding', href: '/customer-bidding', icon: Users },
-  { name: 'Bid Processing', href: '/bid-processing', icon: Gavel },
-  { name: 'Verizon Submissions', href: '/verizon-submissions', icon: Upload },
-  { name: 'Award Management', href: '/award-management', icon: Award },
-  { name: 'Invoicing', href: '/invoicing', icon: FileInput },
-  { name: 'Reports', href: '/reports', icon: LineChart },
+  { name: 'Customer Bidding', href: '/dashboard/customer-bidding', icon: Users },
+  { name: 'Bid Processing', href: '/dashboard/bid-processing', icon: Gavel },
+  { name: 'Verizon Submissions', href: '/dashboard/verizon-submissions', icon: Upload },
+  { name: 'Award Management', href: '/dashboard/award-management', icon: Award },
+  { name: 'Invoicing', href: '/dashboard/invoicing', icon: FileInput },
+  { name: 'Reports', href: '/dashboard/reports', icon: LineChart },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 

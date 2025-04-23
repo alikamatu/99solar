@@ -52,6 +52,7 @@ export default function LoginPage() {
       
 
       localStorage.setItem('isAuthenticated', JSON.stringify(true));
+      localStorage.setItem('userId', data.user.id);
 
       router.push(data.user.role === 'admin' ? '/dashboard' : '/');
     } catch (err) {
