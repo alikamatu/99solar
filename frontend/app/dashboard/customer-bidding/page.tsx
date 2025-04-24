@@ -34,6 +34,7 @@ export default function LotsPage() {
     available_from: "",
     available_to: "",
     commission_rate: "",
+    base_price: "",
   });
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [filters, setFilters] = useState({ page: 1, limit: 20 });
@@ -111,11 +112,15 @@ export default function LotsPage() {
       available_from: lot.available_from || "",
       available_to: lot.available_to || "",
       commission_rate: lot.commission_rate || "",
+      base_price: lot.base_price || "",
     });
   };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+    console.log("Edit Form Data:", editForm);
+    
+    
 
     // Basic validation
     const commission = parseFloat(editForm.commission_rate);
@@ -162,6 +167,9 @@ export default function LotsPage() {
     { field: "lot_number", headerName: "Lot Number", width: 120 },
     { field: "item_description", headerName: "Description", width: 200 },
     { field: "quantity", headerName: "Quantity", width: 120 },
+    { field: "commission_rate", headerName: "Commission Rate (%)", width: 180 },
+    { field: "available_from", headerName: "Available From", width: 180 },
+    { field: "available_to", headerName: "Available To", width: 180 },
     {
       field: "base_price",
       headerName: "Base Price",
@@ -299,6 +307,17 @@ export default function LotsPage() {
                 }}
                 helperText="Enter a value between 0 and 100"
               />
+                            <TextField
+                              label="Base Price"
+                              type="number"
+                              value={editForm.base_price}
+                              onChange={(e) => setEditForm({ ...editForm, base_price: e.target.value })}
+                              fullWidth
+                              InputProps={{
+                                endAdornment: <InputAdornment position="end">$</InputAdornment>,
+                              }}
+                              helperText="Enter amount in USD"
+                            />
             </form>
           </DialogContent>
           <DialogActions>

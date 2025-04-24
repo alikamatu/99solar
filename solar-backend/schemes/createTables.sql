@@ -45,8 +45,8 @@ CREATE TABLE lots (
   description TEXT,
   disposition VARCHAR(10) CHECK (disposition IN ('DNB', 'DNC', 'DNA')),
   unit_awarded_price NUMERIC(10, 2),
-  available_from TIMESTAMP WITH TIME ZONE,
-  available_to TIMESTAMP WITH TIME ZONE,
+  available_from TIMESTAMP,
+  available_to TIMESTAMP,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

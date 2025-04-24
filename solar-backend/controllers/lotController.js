@@ -53,15 +53,16 @@ exports.getLots = async (req, res) => {
 exports.updateLot = async (req, res) => {
   try {
     const { id } = req.params;
-    const { available_from, available_to, commission_rate } = req.body;
+    const { available_from, available_to, commission_rate, base_price } = req.body;
 
     const result = await pool.query(
       `UPDATE lots 
-       SET available_from = $1, available_to = $2, commission_rate = $3, updated_at = NOW()
-       WHERE id = $4 RETURNING *`,
-      [available_from, available_to, commission_rate, id]
+       SET available_from = $1, available_to = $2, commission_rate = $3, base_price = $4, updated_at = NOW()
+       WHERE id = $5 RETURNING *`,
+      [available_from, available_to, commission_rate, base_price, id]
     );
 
+        console.log('Updated Lot:', result.rows[0]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Lot not found' });
     }
