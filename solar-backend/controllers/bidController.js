@@ -1,4 +1,5 @@
 const pool = require("../models/db");
+const { v4: isUUID } = require('uuid'); // Import a UUID validation function
 
 // Get all bids with filtering and pagination
 exports.getBids = async (req, res) => {
@@ -56,6 +57,36 @@ exports.getBids = async (req, res) => {
   }
 };
 
+
+exports.createBid = async (req, res) => {
+  try {
+    const { user_id, lot_id, bid_amount } = req.body;
+
+    // Validate required fields
+    if (!user_id || !lot_id || !bid_amount) {
+      return res.status(400).json({ error: 'user_id, lot_id, and bid_amount are required' });
+    }
+
+    // Validate UUIDs
+    if (!isUUID(user_id) || !isUUID(lot_id)) {
+      return res.status(400).json({ error: 'Invalid user_id or lot_id format' });
+    }
+
+    // Insert the bid into the database
+    const result = await pool.query(
+      `INSERT INTO bids (id, user_id, lot_id, bid_amount, submitted_at, status)
+       VALUES (gen_random_uuid(), $1, $2, $3, NOW(), 'pending')
+       RETURNING *`,
+      [user_id, lot_id, bid_amount]
+    );
+
+    res.status(201).json(result.rows[0]); // Return the created bid
+  } catch (error) {
+    console.error('Error creating bid:', error);
+    res.status(500).json({ error: 'Failed to create bid' });
+  }
+};
+
 // Award a bid to a user
 exports.awardBid = async (req, res) => {
   const client = await pool.connect();
@@ -91,7 +122,7 @@ exports.awardBid = async (req, res) => {
        WHERE lot_id = $1 AND id != $2 AND status = 'pending'`,
       [bid.lot_id, bidId]
     );
-    
+
     // 4. Create awarded bid record
     const awardedBid = await client.query(
       `INSERT INTO awarded_bids 

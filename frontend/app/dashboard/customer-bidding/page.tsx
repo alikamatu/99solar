@@ -1,24 +1,52 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import {
+  DataGrid,
+  GridColDef,
+} from "@mui/x-data-grid";
+import {
+  TextField,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  Tooltip,
+  Pagination,
+  InputAdornment,
+} from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { Upload, Edit, Cancel, CheckCircle } from "@mui/icons-material";
+
 export default function LotsPage() {
   const [lots, setLots] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [editingLot, setEditingLot] = useState<any>(null); // State for the lot being edited
+  const [error, setError] = useState("");
+  const [file, setFile] = useState(null);
+  const [editingLot, setEditingLot] = useState(null);
   const [editForm, setEditForm] = useState({
     available_from: "",
     available_to: "",
     commission_rate: "",
   });
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [filters, setFilters] = useState({ page: 1, limit: 20 });
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Fetch lots from the backend
-  const fetchLots = async () => {
+  const fetchLots = useCallback(async () => {
     setLoading(true);
+    setError("");
     try {
+      const queryParams = new URLSearchParams(filters).toString();
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/lots`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // Include the token
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
@@ -27,18 +55,28 @@ export default function LotsPage() {
       }
 
       const data = await response.json();
-      setLots(data);
+      setLots(data || []); // Assume API returns { lots: [], totalPages }
+      // setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error("Error fetching lots:", error);
+      setError("Failed to load lots. Please try again.");
+      setSnackbar({ open: true, message: "Failed to load lots.", severity: "error" });
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
-  // Handle file upload
-  const handleUpload = async (e: React.FormEvent) => {
+  const handleUpload = async (e) => {
     e.preventDefault();
     if (!file) {
+      setSnackbar({ open: true, message: "Please select a file.", severity: "error" });
+      return;
+    }
+
+    // Validate file type (e.g., CSV, Excel)
+    const validTypes = ["text/csv", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"];
+    if (!validTypes.includes(file.type)) {
+      setSnackbar({ open: true, message: "Please upload a CSV or Excel file.", severity: "error" });
       return;
     }
 
@@ -50,7 +88,7 @@ export default function LotsPage() {
         method: "POST",
         body: formData,
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // Include the token
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
@@ -58,15 +96,16 @@ export default function LotsPage() {
         throw new Error("Failed to upload file.");
       }
 
-      const data = await response.json();
-      fetchLots(); // Refresh the list of lots
+      setFile(null);
+      fetchLots();
+      setSnackbar({ open: true, message: "File uploaded successfully!", severity: "success" });
     } catch (error) {
       console.error("Error uploading file:", error);
+      setSnackbar({ open: true, message: "Failed to upload file.", severity: "error" });
     }
   };
 
-  // Handle edit button click
-  const handleEditClick = (lot: any) => {
+  const handleEditClick = (lot) => {
     setEditingLot(lot);
     setEditForm({
       available_from: lot.available_from || "",
@@ -75,16 +114,26 @@ export default function LotsPage() {
     });
   };
 
-  // Handle edit form submission
-  const handleEditSubmit = async (e: React.FormEvent) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
+
+    // Basic validation
+    const commission = parseFloat(editForm.commission_rate);
+    if (commission < 0 || commission > 100) {
+      setSnackbar({ open: true, message: "Commission rate must be between 0 and 100.", severity: "error" });
+      return;
+    }
+    if (new Date(editForm.available_from) > new Date(editForm.available_to)) {
+      setSnackbar({ open: true, message: "Available From date cannot be after Available To date.", severity: "error" });
+      return;
+    }
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/lots/${editingLot.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // Include the token
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify(editForm),
       });
@@ -97,117 +146,202 @@ export default function LotsPage() {
       setLots((prevLots) =>
         prevLots.map((lot) => (lot.id === updatedLot.id ? updatedLot : lot))
       );
-      setEditingLot(null); // Close the edit form
+      setEditingLot(null);
+      setSnackbar({ open: true, message: "Lot updated successfully!", severity: "success" });
     } catch (error) {
       console.error("Error updating lot:", error);
+      setSnackbar({ open: true, message: "Failed to update lot.", severity: "error" });
     }
   };
 
   useEffect(() => {
     fetchLots();
-  }, []);
+  }, [fetchLots]);
+
+  const columns = [
+    { field: "lot_number", headerName: "Lot Number", width: 120 },
+    { field: "item_description", headerName: "Description", width: 200 },
+    { field: "quantity", headerName: "Quantity", width: 120 },
+    {
+      field: "base_price",
+      headerName: "Base Price",
+      width: 120,
+      // valueFormatter: ({ value }) => `$${value.toFixed(2)}`,
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 150,
+      renderCell: (params) => (
+        <Tooltip title="Edit this lot">
+          <Button
+            variant="contained"
+            color="success"
+            size="small"
+            startIcon={<Edit />}
+            onClick={() => handleEditClick(params.row)}
+          >
+            Edit
+          </Button>
+        </Tooltip>
+      ),
+    },
+  ];
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Lots Management</h1>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <div className="container mx-auto p-6 space-y-6">
+        <h1 className="text-3xl font-bold text-gray-800">Lots Management</h1>
 
-      {/* File Upload Form */}
-      <form onSubmit={handleUpload} className="flex items-center space-x-4">
-        <input
-          type="file"
-          onChange={(e) => setFile(e.target.files?.[0] || null)}
-          className="border p-2"
-        />
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Upload Lots
-        </button>
-      </form>
-
-      {/* Lots Table */}
-      {loading ? (
-        <p>Loading lots...</p>
-      ) : (
-        <table className="w-full border-collapse border border-gray-300">
-          <thead>
-            <tr>
-              <th className="border border-gray-300 px-4 py-2">Lot Number</th>
-              <th className="border border-gray-300 px-4 py-2">Description</th>
-              <th className="border border-gray-300 px-4 py-2">Quantity</th>
-              <th className="border border-gray-300 px-4 py-2">Base Price</th>
-              <th className="border border-gray-300 px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {lots.map((lot: any) => (
-              <tr key={lot.id}>
-                <td className="border border-gray-300 px-4 py-2">{lot.lot_number}</td>
-                <td className="border border-gray-300 px-4 py-2">{lot.item_description}</td>
-                <td className="border border-gray-300 px-4 py-2">{lot.quantity}</td>
-                <td className="border border-gray-300 px-4 py-2">${lot.base_price}</td>
-                <td className="border border-gray-300 px-4 py-2">
-                  <button
-                    className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
-                    onClick={() => handleEditClick(lot)}
-                  >
-                    Edit
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-
-      {/* Edit Form */}
-      {editingLot && (
-        <form onSubmit={handleEditSubmit} className="space-y-4 mt-4">
-          <h2 className="text-xl font-bold">Edit Lot</h2>
-          <div>
-            <label className="block">Available From:</label>
-            <input
-              type="date"
-              value={editForm.available_from}
-              onChange={(e) => setEditForm({ ...editForm, available_from: e.target.value })}
-              className="border p-2 w-full"
-            />
+        {/* File Upload Form */}
+        <form onSubmit={handleUpload} className="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-lg shadow">
+          <div className="flex-1">
+            <Button
+              variant="outlined"
+              component="label"
+              startIcon={<Upload />}
+              fullWidth
+            >
+              {file ? file.name : "Choose File"}
+              <input
+                type="file"
+                hidden
+                accept=".csv,.xlsx,.xls"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+              />
+            </Button>
           </div>
-          <div>
-            <label className="block">Available To:</label>
-            <input
-              type="date"
-              value={editForm.available_to}
-              onChange={(e) => setEditForm({ ...editForm, available_to: e.target.value })}
-              className="border p-2 w-full"
-            />
-          </div>
-          <div>
-            <label className="block">Commission Rate:</label>
-            <input
-              type="number"
-              step="0.01"
-              value={editForm.commission_rate}
-              onChange={(e) => setEditForm({ ...editForm, commission_rate: e.target.value })}
-              className="border p-2 w-full"
-            />
-          </div>
-          <button
+          <Button
             type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            variant="contained"
+            color="primary"
+            disabled={!file}
+            startIcon={<Upload />}
           >
-            Save Changes
-          </button>
-          <button
-            type="button"
-            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 ml-2"
-            onClick={() => setEditingLot(null)} // Cancel editing
-          >
-            Cancel
-          </button>
+            Upload Lots
+          </Button>
+          {file && (
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setFile(null)}
+            >
+              Clear
+            </Button>
+          )}
         </form>
-      )}
-    </div>
+
+        {/* Lots Table */}
+        {loading ? (
+          <div className="flex justify-center py-10">
+            <CircularProgress />
+          </div>
+        ) : error ? (
+          <Alert severity="error">{error}</Alert>
+        ) : lots.length === 0 ? (
+          <Alert severity="info">
+            No lots available. Try uploading a file or refreshing.
+          </Alert>
+        ) : (
+          <div className="bg-white rounded-lg shadow">
+            <DataGrid
+              rows={lots}
+              columns={columns}
+              pageSize={filters.limit}
+              rowsPerPageOptions={[20]}
+              disableSelectionOnClick
+              autoHeight
+              getRowId={(row) => row.id}
+              className="border-0"
+            />
+            <div className="flex justify-center py-4">
+              <Pagination
+                count={totalPages}
+                page={filters.page}
+                onChange={(e, page) => setFilters({ ...filters, page })}
+                color="primary"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Edit Dialog */}
+        <Dialog open={!!editingLot} onClose={() => setEditingLot(null)}>
+          <DialogTitle>Edit Lot #{editingLot?.lot_number}</DialogTitle>
+          <DialogContent>
+            <div className="space-y-2 mb-4">
+              <p><strong>Description:</strong> {editingLot?.item_description}</p>
+              <p><strong>Quantity:</strong> {editingLot?.quantity}</p>
+              <p><strong>Base Price:</strong> ${editingLot?.base_price?.toFixed(2)}</p>
+            </div>
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <DatePicker
+                label="Available From"
+                value={editForm.available_from ? new Date(editForm.available_from) : null}
+                onChange={(date) => setEditForm({ ...editForm, available_from: date?.toISOString().split("T")[0] || "" })}
+                renderInput={(params) => <TextField {...params} fullWidth />}
+              />
+              <DatePicker
+                label="Available To"
+                value={editForm.available_to ? new Date(editForm.available_to) : null}
+                onChange={(date) => setEditForm({ ...editForm, available_to: date?.toISOString().split("T")[0] || "" })}
+                renderInput={(params) => <TextField {...params} fullWidth />}
+              />
+              <TextField
+                label="Commission Rate (%)"
+                type="number"
+                step="0.01"
+                value={editForm.commission_rate}
+                onChange={(e) => setEditForm({ ...editForm, commission_rate: e.target.value })}
+                fullWidth
+                InputProps={{
+                  endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                }}
+                helperText="Enter a value between 0 and 100"
+              />
+            </form>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setEditingLot(null)}
+              color="secondary"
+              startIcon={<Cancel />}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleEditSubmit}
+              color="primary"
+              variant="contained"
+              startIcon={<CheckCircle />}
+              disabled={
+                !editForm.available_from ||
+                !editForm.available_to ||
+                !editForm.commission_rate ||
+                parseFloat(editForm.commission_rate) < 0 ||
+                parseFloat(editForm.commission_rate) > 100
+              }
+            >
+              Save Changes
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Snackbar for Feedback */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        >
+          <Alert
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            severity={snackbar.severity}
+            sx={{ width: "100%" }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </div>
+    </LocalizationProvider>
   );
 }

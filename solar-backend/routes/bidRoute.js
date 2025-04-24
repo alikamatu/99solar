@@ -1,13 +1,15 @@
 const express = require('express');
 const multer = require('multer');
-const { getBids, awardBid } = require('../controllers/bidController');
+const { getBids, awardBid, createBid } = require('../controllers/bidController');
 const { getUsers, updateUser } = require('../controllers/userController');
 
 const router = express.Router();
 
+
+
 // Bid management
-router.get('/bids', getBids)
-  .get('/bids', (req, res, next) => {
+router.get('/', getBids)
+  .get('/', (req, res, next) => {
     /*
     #swagger.tags = ['Admin/Bids']
     #swagger.summary = 'Get all bids'
@@ -46,8 +48,10 @@ router.get('/bids', getBids)
     next();
   });
 
-router.post('/bids/:id/award', awardBid)
-  .post('/bids/:id/award', (req, res, next) => {
+router.post('/addbid', createBid);
+
+router.post('/:id/award', awardBid)
+  .post('/:id/award', (req, res, next) => {
     /*
     #swagger.tags = ['Admin/Bids']
     #swagger.summary = 'Award a bid to a user'
