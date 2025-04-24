@@ -106,7 +106,7 @@ export default function LotsAndBidsPage() {
   }, [fetchLots]);
 
   const columns = [
-    { field: "id", headerName: "Lot ID", width: 100 },
+    { field: "lot_number", headerName: "Lot ID", width: 100 },
     { field: "item_description", headerName: "Description", width: 200 },
     { field: "quantity", headerName: "Quantity", width: 120 },
     {

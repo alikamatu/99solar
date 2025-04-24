@@ -22,7 +22,9 @@ import {
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { Upload, Edit, Cancel, CheckCircle } from "@mui/icons-material";
+import { Upload, Edit, Cancel, CheckCircle, Delete, ClearAll } from "@mui/icons-material";
+import UploadLotForm from "@/app/_components/UploadLotForm";
+
 
 export default function LotsPage() {
   const [lots, setLots] = useState([]);
@@ -106,6 +108,48 @@ export default function LotsPage() {
     }
   };
 
+  const handleDeleteLot = async (lotId) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/lots/${lotId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete lot.");
+      }
+
+      setLots((prevLots) => prevLots.filter((lot) => lot.id !== lotId));
+      setSnackbar({ open: true, message: "Lot deleted successfully!", severity: "success" });
+    } catch (error) {
+      console.error("Error deleting lot:", error);
+      setSnackbar({ open: true, message: "Failed to delete lot.", severity: "error" });
+    }
+  };
+
+  const handleClearAllLots = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/lots/clear-all`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to clear all lots.");
+      }
+  
+      setLots([]); // Clear the lots from the state
+      setSnackbar({ open: true, message: "All lots cleared successfully!", severity: "success" });
+    } catch (error) {
+      console.error("Error clearing all lots:", error);
+      setSnackbar({ open: true, message: "Failed to clear all lots.", severity: "error" });
+    }
+  };
+  
   const handleEditClick = (lot) => {
     setEditingLot(lot);
     setEditForm({
@@ -174,24 +218,36 @@ export default function LotsPage() {
       field: "base_price",
       headerName: "Base Price",
       width: 120,
-      // valueFormatter: ({ value }) => `$${value.toFixed(2)}`,
     },
     {
       field: "actions",
       headerName: "Actions",
-      width: 150,
+      width: 200,
       renderCell: (params) => (
-        <Tooltip title="Edit this lot">
-          <Button
-            variant="contained"
-            color="success"
-            size="small"
-            startIcon={<Edit />}
-            onClick={() => handleEditClick(params.row)}
-          >
-            Edit
-          </Button>
-        </Tooltip>
+        <div className="flex gap-2">
+          <Tooltip title="Edit this lot">
+            <Button
+              variant="contained"
+              color="success"
+              size="small"
+              startIcon={<Edit />}
+              onClick={() => handleEditClick(params.row)}
+            >
+              Edit
+            </Button>
+          </Tooltip>
+          <Tooltip title="Delete this lot">
+            <Button
+              variant="contained"
+              color="error"
+              size="small"
+              startIcon={<Delete />}
+              onClick={() => handleDeleteLot(params.row.id)}
+            >
+              Delete
+            </Button>
+          </Tooltip>
+        </div>
       ),
     },
   ];
@@ -238,6 +294,19 @@ export default function LotsPage() {
             </Button>
           )}
         </form>
+        <UploadLotForm setLots={setLots} />
+
+        <div className="flex justify-end">
+          <Button
+            variant="contained"
+            color="error"
+            startIcon={<ClearAll />}
+            onClick={handleClearAllLots}
+          >
+            Clear All Lots
+          </Button>
+        </div>
+
 
         {/* Lots Table */}
         {loading ? (
