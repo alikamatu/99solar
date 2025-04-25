@@ -27,6 +27,7 @@ export default function LotsAndBidsPage() {
   const [error, setError] = useState("");
   interface Lot {
     id: number;
+    lot_number: string;
     item_description: string;
     quantity: number;
     base_price: number;
@@ -196,7 +197,7 @@ export default function LotsAndBidsPage() {
 
       {/* Bid Dialog */}
       <Dialog open={!!placingBid} onClose={() => setPlacingBid(null)}>
-        <DialogTitle>Place Bid for Lot #{placingBid?.id}</DialogTitle>
+        <DialogTitle>Place Bid for Lot #{placingBid?.lot_number}</DialogTitle>
         <DialogContent>
           <div className="space-y-2 mb-4">
             <p><strong>Description:</strong> {placingBid?.item_description}</p>

@@ -5,51 +5,59 @@ const { v4: isUUID } = require('uuid'); // Import a UUID validation function
 exports.getBids = async (req, res) => {
   try {
     const { status, lot_id, user_id, page = 1, limit = 20 } = req.query;
-    
+
     let query = `
       SELECT 
-        b.id, b.bid_amount, b.status, b.submitted_at,
-        u.id as user_id, u.name as user_name, u.email as user_email,
-        l.id as lot_id, l.item_description as lot_description
+        b.id AS bid_id, 
+        b.bid_amount, 
+        b.status,
+        b.bid_time, 
+        b.submitted_at,
+        u.id AS user_id, 
+        u.name AS user_name, 
+        u.email AS user_email,
+        l.id AS lot_id, 
+        l.lot_number AS lot_number,
+        l.item_description AS lot_description
       FROM bids b
       JOIN users u ON b.user_id = u.id
       JOIN lots l ON b.lot_id = l.id
     `;
-    
+
     const conditions = [];
     const params = [];
-    
+
     if (status) {
       conditions.push(`b.status = $${params.length + 1}`);
       params.push(status);
     }
-    
+
     if (lot_id) {
       conditions.push(`b.lot_id = $${params.length + 1}`);
       params.push(lot_id);
     }
-    
+
     if (user_id) {
       conditions.push(`b.user_id = $${params.length + 1}`);
       params.push(user_id);
     }
-    
+
     if (conditions.length > 0) {
       query += ` WHERE ${conditions.join(' AND ')}`;
     }
-    
+
     query += ` ORDER BY b.submitted_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
     params.push(Number(limit), (Number(page) - 1) * Number(limit));
-    
+
     const result = await pool.query(query, params);
-    
+
     res.json({
       bids: result.rows,
       pagination: {
         page: Number(page),
         limit: Number(limit),
-        total: result.rows.length
-      }
+        total: result.rows.length,
+      },
     });
   } catch (error) {
     console.error('Error fetching bids:', error);

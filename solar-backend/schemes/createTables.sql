@@ -58,7 +58,7 @@ CREATE TABLE bids (
   bid_amount NUMERIC(10,2),
   submitted_at TIMESTAMP DEFAULT now(),
   status TEXT CHECK (status IN ('pending', 'awarded', 'rejected')) DEFAULT 'pending'
-  bid_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  bid_time TIMESTAMP, --WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT unique_bid UNIQUE(user_id, lot_id) -- Ensure one active bid per user per lot if required
 );
 

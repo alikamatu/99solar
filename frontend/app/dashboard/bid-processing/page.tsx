@@ -25,8 +25,12 @@ import { debounce } from "lodash";
 import { GridRenderCellParams } from "@mui/x-data-grid"; // Import the type
 
 type Bid = {
-  id: string;
+  id: String;
+  bid_id: string;
+  bid_time: string;
+  bid_amount: number;
   lot_id: string;
+  lot_number: string;
   user_id: string;
   status: string;
 };
@@ -100,7 +104,7 @@ export default function BidManagementPage() {
     }
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bids/${awardingBid.id}/award`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bids/${awardingBid.bid_id}/award`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -115,7 +119,7 @@ export default function BidManagementPage() {
 
       const updatedBid = await response.json();
       setBids((prevBids: Bid[]) =>
-        prevBids.map((bid) => (bid.id === updatedBid.id ? updatedBid : bid))
+        prevBids.map((bid) => (bid.bid_id === updatedBid.id ? updatedBid : bid))
       );
       setAwardingBid(null);
       setSnackbar({ open: true, message: "Bid awarded successfully!", severity: "success" });
@@ -135,15 +139,17 @@ export default function BidManagementPage() {
   }, [filters, debouncedFetchBids]);
 
   const columns = [
-    { field: "id", headerName: "Bid ID", width: 100 },
-    { field: "lot_id", headerName: "Lot ID", width: 150 },
-    { field: "user_id", headerName: "User ID", width: 150 },
+    { field: "bid_time", headerName: "Bid Time", width: 100 },
+    { field: "lot_number", headerName: "Lot ID", width: 150 },
+    { field: "user_name", headerName: "User Name", width: 150 }, // Added User Name column
+    { field: "user_email", headerName: "User Email", width: 200 }, // Added User Email column
+    { field: "bid_amount", headerName: "Bid Amount", width: 150 },
     { field: "status", headerName: "Status", width: 120 },
     {
       field: "actions",
       headerName: "Actions",
       width: 150,
-      renderCell: (params: GridRenderCellParams) => // Explicitly type 'params'
+      renderCell: (params: GridRenderCellParams) =>
         params.row.status === "pending" ? (
           <Tooltip title="Award this bid">
             <Button
@@ -233,15 +239,11 @@ export default function BidManagementPage() {
           <DataGrid
             rows={bids}
             columns={columns}
-            initialState={{
-              pagination: {
-                paginationModel: { pageSize: filters.limit },
-              },
-            }}
+            getRowId={(row) => row.bid_id} // Use id as the unique identifier
+            paginationModel={{ pageSize: filters.limit, page: filters.page - 1 }}
             pageSizeOptions={[20]}
             disableRowSelectionOnClick
             autoHeight
-            getRowId={(row) => row.id}
             className="border-0"
           />
           <div className="flex justify-center py-4">
@@ -257,7 +259,7 @@ export default function BidManagementPage() {
 
       {/* Award Dialog */}
       <Dialog open={!!awardingBid} onClose={() => setAwardingBid(null)}>
-        <DialogTitle>Award Bid #{awardingBid?.id}</DialogTitle>
+        <DialogTitle>Award Bid #{awardingBid?.bid_id}</DialogTitle>
         <DialogContent>
           <form onSubmit={handleAwardSubmit} className="space-y-4">
             <TextField
