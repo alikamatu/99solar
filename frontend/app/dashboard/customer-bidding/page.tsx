@@ -24,8 +24,19 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { Upload, Edit, Cancel, CheckCircle, Delete, ClearAll } from "@mui/icons-material";
 import UploadLotForm from "@/app/_components/UploadLotForm";
 
+type Lot = {
+  id: string | number;
+  lot_number?: string;
+  item_description?: string;
+  quantity?: number;
+  commission_rate?: string;
+  available_from?: string;
+  available_to?: string;
+  base_price?: number;
+};
 
 export default function LotsPage() {
+
   const [lots, setLots] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
