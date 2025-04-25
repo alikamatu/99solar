@@ -118,7 +118,6 @@ export default function LotsAndBidsPage() {
       }
   
       const data = await response.json();
-      console.log("API Response:", data);
       
       // Check if the response is an array
       if (Array.isArray(data)) {
@@ -157,7 +156,6 @@ export default function LotsAndBidsPage() {
       const data = await response.json();
       setUserBids(data.bids || []);
     } catch (error) {
-      console.error("Error fetching user bids:", error);
       setSnackbar({ open: true, message: "Failed to load your bids.", severity: "error" });
     } finally {
       setProfileLoading(false);
@@ -166,7 +164,7 @@ export default function LotsAndBidsPage() {
 
   const fetchUserProfile = useCallback(async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bids/user/${localStorage.getItem("userId")}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bids/${localStorage.getItem("userId")}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -236,7 +234,6 @@ export default function LotsAndBidsPage() {
       fetchUserProfile();
       setSnackbar({ open: true, message: "Bid placed successfully!", severity: "success" });
     } catch (error) {
-      console.error("Error placing bid:", error);
       setSnackbar({ open: true, message: "Failed to place bid.", severity: "error" });
     }
   };
@@ -270,7 +267,6 @@ export default function LotsAndBidsPage() {
       headerName: "Base Price",
       width: 120,
       renderCell: (params: GridRenderCellParams) => {
-        console.log("Base Price Value:", params.value);
         return params.value !== null && !isNaN(params.value)
           ? `$${Number(params.value).toFixed(2)}`
           : "-";
@@ -320,7 +316,6 @@ export default function LotsAndBidsPage() {
       headerName: "Bid Amount",
       width: 120,
       renderCell: (params: GridRenderCellParams) => {
-        console.log("Bid Amount Value:", params.value);
         const value = Number(params.value);
         return !isNaN(value) ? `$${value.toFixed(2)}` : "-";
       },

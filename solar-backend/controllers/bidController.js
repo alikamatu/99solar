@@ -212,9 +212,9 @@ exports.getUserProfile = async (req, res) => {
       SELECT 
         name, 
         email, 
-        (SELECT COUNT(*) FROM bids WHERE user_id = $1) AS bids_placed,
-        (SELECT COUNT(*) FROM bids WHERE user_id = $1 AND status = 'winning') AS active_bids,
-        (SELECT COUNT(*) FROM awarded_bids WHERE user_id = $1) AS won_bids
+        (SELECT COUNT(*) FROM bids WHERE id = $1) AS bids_placed,
+        (SELECT COUNT(*) FROM bids WHERE id = $1 AND status = 'winning') AS active_bids,
+        (SELECT COUNT(*) FROM awarded_bids WHERE id = $1) AS won_bids
       FROM users
       WHERE id = $1
     `;
