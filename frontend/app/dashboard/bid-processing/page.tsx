@@ -22,6 +22,7 @@ import {
 } from "@mui/material";
 import { Search, Clear, CheckCircle, Cancel } from "@mui/icons-material";
 import { debounce } from "lodash";
+import { GridRenderCellParams } from "@mui/x-data-grid"; // Import the type
 
 type Bid = {
   id: string;
@@ -46,7 +47,11 @@ export default function BidManagementPage() {
     final_price: "",
     commission: "",
   });
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" | "warning" | "info" }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const [totalPages, setTotalPages] = useState(1);
 
   const fetchBids = useCallback(async () => {
@@ -138,7 +143,7 @@ export default function BidManagementPage() {
       field: "actions",
       headerName: "Actions",
       width: 150,
-      renderCell: (params) =>
+      renderCell: (params: GridRenderCellParams) => // Explicitly type 'params'
         params.row.status === "pending" ? (
           <Tooltip title="Award this bid">
             <Button
@@ -228,9 +233,13 @@ export default function BidManagementPage() {
           <DataGrid
             rows={bids}
             columns={columns}
-            pageSize={filters.limit}
-            rowsPerPageOptions={[20]}
-            disableSelectionOnClick
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: filters.limit },
+              },
+            }}
+            pageSizeOptions={[20]}
+            disableRowSelectionOnClick
             autoHeight
             getRowId={(row) => row.id}
             className="border-0"
@@ -254,20 +263,24 @@ export default function BidManagementPage() {
             <TextField
               label="Final Price"
               type="number"
-              step="0.01"
               value={awardForm.final_price}
               onChange={(e) => setAwardForm({ ...awardForm, final_price: e.target.value })}
               fullWidth
               required
+              inputProps={{
+                step: "0.01",
+              }}
             />
             <TextField
               label="Commission"
               type="number"
-              step="0.01"
               value={awardForm.commission}
               onChange={(e) => setAwardForm({ ...awardForm, commission: e.target.value })}
               fullWidth
               required
+              inputProps={{
+                step: "0.01",
+              }}
             />
           </form>
         </DialogContent>
@@ -280,7 +293,7 @@ export default function BidManagementPage() {
             Cancel
           </Button>
           <Button
-            onClick={handleAwardSubmit}
+            onClick={() => handleAwardSubmit(new Event("submit") as unknown as React.FormEvent<HTMLFormElement>)}
             color="primary"
             variant="contained"
             startIcon={<CheckCircle />}
