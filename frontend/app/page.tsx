@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   DataGrid,
-  GridColDef,
 } from "@mui/x-data-grid";
 import {
   TextField,
@@ -49,7 +48,7 @@ export default function LotsAndBidsPage() {
       const data = await response.json();
       console.log("API Response:", data); // Debug the API response
       setLots(data || []); // Assume API returns { lots: [], totalPages }
-      // setTotalPages(data.totalPages || 1);
+      setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error("Error fetching lots:", error);
       setError("Failed to load lots. Please try again.");

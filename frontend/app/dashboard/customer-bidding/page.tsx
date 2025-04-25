@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   DataGrid,
-  GridColDef,
 } from "@mui/x-data-grid";
 import {
   TextField,
@@ -46,7 +45,6 @@ export default function LotsPage() {
     setLoading(true);
     setError("");
     try {
-      const queryParams = new URLSearchParams(filters).toString();
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/lots`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -59,7 +57,7 @@ export default function LotsPage() {
 
       const data = await response.json();
       setLots(data || []); // Assume API returns { lots: [], totalPages }
-      // setTotalPages(data.totalPages || 1);
+      setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error("Error fetching lots:", error);
       setError("Failed to load lots. Please try again.");
