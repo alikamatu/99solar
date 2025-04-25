@@ -81,6 +81,12 @@ export default function BidManagementPage() {
 
   const handleAwardSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!awardingBid) {
+      setSnackbar({ open: true, message: "No bid selected for awarding.", severity: "error" });
+      return;
+    }
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bids/${awardingBid.id}/award`, {
         method: "POST",
