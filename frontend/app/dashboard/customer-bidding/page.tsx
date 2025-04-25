@@ -61,11 +61,11 @@ export default function LotsPage() {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-
+  
       if (!response.ok) {
         throw new Error("Failed to fetch lots.");
       }
-
+  
       const data = await response.json();
       setLots(data || []); // Assume API returns { lots: [], totalPages }
       setTotalPages(data.totalPages || 1);
@@ -76,7 +76,7 @@ export default function LotsPage() {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, []); // Removed 'filters' from the dependency array
 
   const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
