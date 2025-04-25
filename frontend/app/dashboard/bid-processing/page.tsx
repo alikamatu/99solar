@@ -23,8 +23,15 @@ import {
 import { Search, Clear, CheckCircle, Cancel } from "@mui/icons-material";
 import { debounce } from "lodash";
 
+type Bid = {
+  id: string;
+  lot_id: string;
+  user_id: string;
+  status: string;
+};
+
 export default function BidManagementPage() {
-  const [bids, setBids] = useState([]);
+  const [bids, setBids] = useState<Bid[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [filters, setFilters] = useState({
@@ -34,7 +41,7 @@ export default function BidManagementPage() {
     page: 1,
     limit: 20,
   });
-  const [awardingBid, setAwardingBid] = useState(null);
+  const [awardingBid, setAwardingBid] = useState<Bid | null>(null);
   const [awardForm, setAwardForm] = useState({
     final_price: "",
     commission: "",
@@ -96,13 +103,13 @@ export default function BidManagementPage() {
         },
         body: JSON.stringify(awardForm),
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to award bid.");
       }
-  
+
       const updatedBid = await response.json();
-      setBids((prevBids) =>
+      setBids((prevBids: Bid[]) =>
         prevBids.map((bid) => (bid.id === updatedBid.id ? updatedBid : bid))
       );
       setAwardingBid(null);
