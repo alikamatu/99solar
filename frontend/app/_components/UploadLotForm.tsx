@@ -1,15 +1,10 @@
 import React, { useState } from "react";
 import { TextField, Button, Snackbar, Alert, MenuItem, AlertColor } from "@mui/material";
 
-import { Dispatch, SetStateAction } from "react";
-import { Lot } from "../dashboard/customer-bidding/page";
-
 interface UploadLotFormProps {
-  setLots: Dispatch<SetStateAction<Lot[]>>;
 }
 
-
-export default function UploadLotForm({ setLots }: UploadLotFormProps) {
+export default function UploadLotForm({}: UploadLotFormProps) {
   const [lotData, setLotData] = useState({
     lotNumber: "",
     itemDescription: "",
