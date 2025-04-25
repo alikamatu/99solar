@@ -29,7 +29,7 @@ export default function LotsPage() {
   const [lots, setLots] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [file, setFile] = useState(null);
+    const [file, setFile] = useState<File | null>(null);
   const [editingLot, setEditingLot] = useState(null);
   const [editForm, setEditForm] = useState({
     available_from: "",
@@ -67,23 +67,23 @@ export default function LotsPage() {
     }
   }, [filters]);
 
-  const handleUpload = async (e: { preventDefault: () => void; }) => {
+  const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!file) {
       setSnackbar({ open: true, message: "Please select a file.", severity: "error" });
       return;
     }
-
+  
     // Validate file type (e.g., CSV, Excel)
     const validTypes = ["text/csv", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"];
-    if (file && !validTypes.includes(file.type)) {
+    if (!validTypes.includes(file.type)) {
       setSnackbar({ open: true, message: "Please upload a CSV or Excel file.", severity: "error" });
       return;
     }
-
+  
     const formData = new FormData();
     formData.append("file", file);
-
+  
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/lots/upload`, {
         method: "POST",
@@ -92,11 +92,11 @@ export default function LotsPage() {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-
+  
       if (!response.ok) {
         throw new Error("Failed to upload file.");
       }
-
+  
       setFile(null);
       fetchLots();
       setSnackbar({ open: true, message: "File uploaded successfully!", severity: "success" });
@@ -106,7 +106,8 @@ export default function LotsPage() {
     }
   };
 
-  const handleDeleteLot = async (lotId) => {
+
+  const handleDeleteLot = async (lotId: string | number) => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/lots/${lotId}`, {
         method: "DELETE",
@@ -114,11 +115,11 @@ export default function LotsPage() {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-
+  
       if (!response.ok) {
         throw new Error("Failed to delete lot.");
       }
-
+  
       setLots((prevLots) => prevLots.filter((lot) => lot.id !== lotId));
       setSnackbar({ open: true, message: "Lot deleted successfully!", severity: "success" });
     } catch (error) {
