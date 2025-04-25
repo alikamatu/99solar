@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { getBids, awardBid, createBid } = require('../controllers/bidController');
+const { getBids, awardBid, createBid, getUserBids, getUserProfile } = require('../controllers/bidController');
 const { getUsers, updateUser } = require('../controllers/userController');
 
 const router = express.Router();
@@ -132,8 +132,8 @@ router.get('/users', getUsers)
     next();
   });
 
-router.put('/users/:id', updateUser)
-  .put('/users/:id', (req, res, next) => {
+router.put('/user/:id', updateUser)
+  .put('/user/:id', (req, res, next) => {
     /*
     #swagger.tags = ['Admin/Users']
     #swagger.summary = 'Update user information'
@@ -178,5 +178,8 @@ router.put('/users/:id', updateUser)
     */
     next();
   });
+
+  router.get("/user/:userId", getUserBids);
+  router.get("/:userId", getUserProfile);
 
 module.exports = router;

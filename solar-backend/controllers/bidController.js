@@ -161,3 +161,73 @@ exports.awardBid = async (req, res) => {
     client.release();
   }
 };
+
+exports.getUserBids = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    // Validate userId
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required." });
+    }
+
+    const query = `
+      SELECT 
+        b.id AS bid_id,
+        b.bid_amount,
+        b.status,
+        b.bid_time,
+        l.id AS lot_id,
+        l.lot_number,
+        l.item_description
+      FROM bids b
+      JOIN lots l ON b.lot_id = l.id
+      WHERE b.user_id = $1
+      ORDER BY b.bid_time DESC
+    `;
+
+    const result = await pool.query(query, [userId]);
+
+    res.json({
+      bids: result.rows,
+    });
+  } catch (error) {
+    console.error("Error fetching user bids:", error);
+    res.status(500).json({ error: "Failed to fetch user bids." });
+  }
+};
+
+
+exports.getUserProfile = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    // Validate userId
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required." });
+    }
+
+    // Query to fetch user profile
+    const userQuery = `
+      SELECT 
+        name, 
+        email, 
+        (SELECT COUNT(*) FROM bids WHERE user_id = $1) AS bids_placed,
+        (SELECT COUNT(*) FROM bids WHERE user_id = $1 AND status = 'winning') AS active_bids,
+        (SELECT COUNT(*) FROM awarded_bids WHERE user_id = $1) AS won_bids
+      FROM users
+      WHERE id = $1
+    `;
+
+    const result = await pool.query(userQuery, [userId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    res.status(500).json({ error: "Failed to fetch user profile." });
+  }
+};
