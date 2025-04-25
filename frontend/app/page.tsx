@@ -34,7 +34,13 @@ export default function LotsAndBidsPage() {
     setLoading(true);
     setError("");
     try {
-      const queryParams = new URLSearchParams(filters).toString();
+      // Convert filters to strings
+      const queryParams = new URLSearchParams(
+        Object.fromEntries(
+          Object.entries(filters).map(([key, value]) => [key, String(value)])
+        )
+      ).toString();
+  
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/lots?${queryParams}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -58,7 +64,7 @@ export default function LotsAndBidsPage() {
     }
   }, [filters]);
 
-  const handleBidSubmit = async (e) => {
+  const handleBidSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const bidValue = parseFloat(bidAmount);
 
