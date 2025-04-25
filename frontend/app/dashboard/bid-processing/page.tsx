@@ -79,7 +79,7 @@ export default function BidManagementPage() {
 
   const debouncedFetchBids = useCallback(debounce(fetchBids, 300), [fetchBids]);
 
-  const handleAwardSubmit = async (e) => {
+  const handleAwardSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bids/${awardingBid.id}/award`, {
@@ -90,11 +90,11 @@ export default function BidManagementPage() {
         },
         body: JSON.stringify(awardForm),
       });
-
+  
       if (!response.ok) {
         throw new Error("Failed to award bid.");
       }
-
+  
       const updatedBid = await response.json();
       setBids((prevBids) =>
         prevBids.map((bid) => (bid.id === updatedBid.id ? updatedBid : bid))
