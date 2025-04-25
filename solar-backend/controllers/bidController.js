@@ -60,15 +60,17 @@ exports.getBids = async (req, res) => {
 
 exports.createBid = async (req, res) => {
   try {
-    const { user_id, lot_id, bid_amount } = req.body;
+    const { userId, lot_id, bid_amount } = req.body;
 
     // Validate required fields
-    if (!user_id || !lot_id || !bid_amount) {
+    if (!userId || !lot_id || !bid_amount) {
+      console.log('user_id, lot_id, and bid_amount are required');
       return res.status(400).json({ error: 'user_id, lot_id, and bid_amount are required' });
     }
 
     // Validate UUIDs
-    if (!isUUID(user_id) || !isUUID(lot_id)) {
+    if (!isUUID(userId) || !isUUID(lot_id)) {
+      console.log('Invalid user_id or lot_id format');
       return res.status(400).json({ error: 'Invalid user_id or lot_id format' });
     }
 
@@ -77,7 +79,7 @@ exports.createBid = async (req, res) => {
       `INSERT INTO bids (id, user_id, lot_id, bid_amount, submitted_at, status)
        VALUES (gen_random_uuid(), $1, $2, $3, NOW(), 'pending')
        RETURNING *`,
-      [user_id, lot_id, bid_amount]
+      [userId, lot_id, bid_amount]
     );
 
     res.status(201).json(result.rows[0]); // Return the created bid
