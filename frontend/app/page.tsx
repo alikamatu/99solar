@@ -18,15 +18,27 @@ import {
   Pagination,
   InputAdornment,
 } from "@mui/material";
+import { GridRenderCellParams } from "@mui/x-data-grid";
 import { Gavel, Cancel, CheckCircle } from "@mui/icons-material";
 
 export default function LotsAndBidsPage() {
   const [lots, setLots] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [placingBid, setPlacingBid] = useState(null);
+  interface Lot {
+    id: number;
+    item_description: string;
+    quantity: number;
+    base_price: number;
+  }
+
+  const [placingBid, setPlacingBid] = useState<Lot | null>(null);
   const [bidAmount, setBidAmount] = useState("");
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" | "warning" | "info" }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const [filters, setFilters] = useState({ page: 1, limit: 20 });
   const [totalPages, setTotalPages] = useState(1);
 
@@ -67,7 +79,17 @@ export default function LotsAndBidsPage() {
   const handleBidSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const bidValue = parseFloat(bidAmount);
-
+  
+    // Ensure placingBid is not null
+    if (!placingBid) {
+      setSnackbar({
+        open: true,
+        message: "No lot selected for bidding.",
+        severity: "error",
+      });
+      return;
+    }
+  
     // Basic validation
     if (bidValue <= placingBid.base_price) {
       setSnackbar({
@@ -77,7 +99,7 @@ export default function LotsAndBidsPage() {
       });
       return;
     }
-
+  
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bids/addbid`, {
         method: "POST",
@@ -91,11 +113,11 @@ export default function LotsAndBidsPage() {
           bid_amount: bidValue,
         }),
       });
-
+  
       if (!response.ok) {
         throw new Error("Failed to place bid.");
       }
-
+  
       setPlacingBid(null);
       setBidAmount("");
       fetchLots();
@@ -105,7 +127,6 @@ export default function LotsAndBidsPage() {
       setSnackbar({ open: true, message: "Failed to place bid.", severity: "error" });
     }
   };
-
   useEffect(() => {
     fetchLots();
   }, [fetchLots]);
@@ -122,8 +143,7 @@ export default function LotsAndBidsPage() {
     {
       field: "actions",
       headerName: "Actions",
-      width: 150,
-      renderCell: (params) => (
+      renderCell: (params: GridRenderCellParams) => (
         <Tooltip title="Place a bid on this lot">
           <Button
             variant="contained"
@@ -156,9 +176,9 @@ export default function LotsAndBidsPage() {
           <DataGrid
             rows={lots}
             columns={columns}
-            pageSize={filters.limit}
-            rowsPerPageOptions={[20]}
-            disableSelectionOnClick
+            paginationModel={{ pageSize: filters.limit, page: filters.page - 1 }}
+            pageSizeOptions={[20]}
+            disableRowSelectionOnClick
             autoHeight
             getRowId={(row) => row.id}
             className="border-0"
@@ -167,7 +187,7 @@ export default function LotsAndBidsPage() {
             <Pagination
               count={totalPages}
               page={filters.page}
-              onChange={(e, page) => setFilters({ ...filters, page })}
+              onChange={(e, page) => setFilters({ ...filters, page: page })}
               color="primary"
             />
           </div>
@@ -187,7 +207,7 @@ export default function LotsAndBidsPage() {
             <TextField
               label="Bid Amount"
               type="number"
-              step="0.01"
+              inputProps={{ step: "0.01" }}
               value={bidAmount}
               onChange={(e) => setBidAmount(e.target.value)}
               fullWidth
@@ -208,11 +228,14 @@ export default function LotsAndBidsPage() {
             Cancel
           </Button>
           <Button
-            onClick={handleBidSubmit}
+            onClick={(e) => {
+              e.preventDefault();
+              handleBidSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+            }}
             color="primary"
             variant="contained"
             startIcon={<CheckCircle />}
-            disabled={!bidAmount || parseFloat(bidAmount) <= placingBid?.base_price}
+            disabled={!bidAmount || parseFloat(bidAmount) <= (placingBid?.base_price ?? 0)}
           >
             Submit Bid
           </Button>
