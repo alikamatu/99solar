@@ -25,7 +25,7 @@ import { debounce } from "lodash";
 import { GridRenderCellParams } from "@mui/x-data-grid"; // Import the type
 
 type Bid = {
-  id: String;
+  id: string;
   bid_id: string;
   bid_time: string;
   bid_amount: number;
