@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   DataGrid,
+  GridRenderCellParams,
 } from "@mui/x-data-grid";
 import {
   TextField,
@@ -24,7 +25,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { Upload, Edit, Cancel, CheckCircle, Delete, ClearAll } from "@mui/icons-material";
 import UploadLotForm from "@/app/_components/UploadLotForm";
 
-type Lot = {
+export type Lot = {
   id: string | number;
   lot_number?: string;
   item_description?: string;
@@ -34,20 +35,23 @@ type Lot = {
   available_to?: string;
   base_price?: number;
 };
-
 export default function LotsPage() {
     const [lots, setLots] = useState<Lot[]>([]); // Explicitly define the type of lots
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
     const [file, setFile] = useState<File | null>(null);
-  const [editingLot, setEditingLot] = useState(null);
+  const [editingLot, setEditingLot] = useState<Lot | null>(null);
   const [editForm, setEditForm] = useState({
     available_from: "",
     available_to: "",
     commission_rate: "",
     base_price: "",
   });
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" | "info" | "warning" }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const [filters, setFilters] = useState({ page: 1, limit: 20 });
   const [totalPages, setTotalPages] = useState(1);
 
@@ -159,17 +163,17 @@ export default function LotsPage() {
     }
   };
   
-  const handleEditClick = (lot) => {
+  const handleEditClick = (lot: Lot) => {
     setEditingLot(lot);
     setEditForm({
       available_from: lot.available_from || "",
       available_to: lot.available_to || "",
       commission_rate: lot.commission_rate || "",
-      base_price: lot.base_price || "",
+      base_price: lot.base_price ? String(lot.base_price) : "",
     });
   };
 
-  const handleEditSubmit = async (e) => {
+  const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Edit Form Data:", editForm);
     
@@ -187,6 +191,9 @@ export default function LotsPage() {
     }
 
     try {
+      if (!editingLot) {
+        throw new Error("No lot is being edited.");
+      }
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/lots/${editingLot.id}`, {
         method: "PUT",
         headers: {
@@ -232,7 +239,7 @@ export default function LotsPage() {
       field: "actions",
       headerName: "Actions",
       width: 200,
-      renderCell: (params) => (
+      renderCell: (params: GridRenderCellParams) => (
         <div className="flex gap-2">
           <Tooltip title="Edit this lot">
             <Button
@@ -333,9 +340,9 @@ export default function LotsPage() {
             <DataGrid
               rows={lots}
               columns={columns}
-              pageSize={filters.limit}
-              rowsPerPageOptions={[20]}
-              disableSelectionOnClick
+              paginationModel={{ pageSize: filters.limit, page: filters.page - 1 }}
+              pageSizeOptions={[20]}
+              disableRowSelectionOnClick
               autoHeight
               getRowId={(row) => row.id}
               className="border-0"
@@ -344,7 +351,7 @@ export default function LotsPage() {
               <Pagination
                 count={totalPages}
                 page={filters.page}
-                onChange={(e, page) => setFilters({ ...filters, page })}
+                onChange={(e, page) => setFilters({ ...filters, page: page })}
                 color="primary"
               />
             </div>
@@ -365,18 +372,18 @@ export default function LotsPage() {
                 label="Available From"
                 value={editForm.available_from ? new Date(editForm.available_from) : null}
                 onChange={(date) => setEditForm({ ...editForm, available_from: date?.toISOString().split("T")[0] || "" })}
-                renderInput={(params) => <TextField {...params} fullWidth />}
+                slots={{ textField: (params) => <TextField {...params} fullWidth /> }}
               />
               <DatePicker
                 label="Available To"
                 value={editForm.available_to ? new Date(editForm.available_to) : null}
                 onChange={(date) => setEditForm({ ...editForm, available_to: date?.toISOString().split("T")[0] || "" })}
-                renderInput={(params) => <TextField {...params} fullWidth />}
+                slots={{ textField: (params) => <TextField {...params} fullWidth /> }}
               />
               <TextField
                 label="Commission Rate (%)"
                 type="number"
-                step="0.01"
+                inputProps={{ step: "0.01" }}
                 value={editForm.commission_rate}
                 onChange={(e) => setEditForm({ ...editForm, commission_rate: e.target.value })}
                 fullWidth
