@@ -31,7 +31,6 @@ import {
   Chip,
   Tabs,
   Tab,
-  Box,
   Paper,
   Badge,
 } from "@mui/material";
@@ -510,7 +509,7 @@ export default function LotsAndBidsPage() {
                   <CircularProgress color="secondary" />
                 </div>
               ) : userBids.length === 0 ? (
-                <Alert severity="info">You haven't placed any bids yet.</Alert>
+                <Alert severity="info">You have not placed any bids yet.</Alert>
               ) : (
                 <Paper elevation={3}>
                   <DataGrid
