@@ -1,7 +1,5 @@
-"use client";
-
 import React, { useState } from "react";
-import { TextField, Button, Snackbar, Alert, MenuItem } from "@mui/material";
+import { TextField, Button, Snackbar, Alert, MenuItem, AlertColor } from "@mui/material";
 
 const UploadLotForm = () => {
   const [lotData, setLotData] = useState({
@@ -19,7 +17,18 @@ const UploadLotForm = () => {
     availableFrom: "",
     availableTo: "",
   });
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+
+  // Explicitly type the snackbar state
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: AlertColor;
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
   const [showForm, setShowForm] = useState(false); // Toggle form visibility
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -64,7 +73,7 @@ const UploadLotForm = () => {
         availableFrom: "",
         availableTo: "",
       });
-    } catch {
+    } catch (error) {
       setSnackbar({ open: true, message: "Failed to upload lot.", severity: "error" });
     }
   };
