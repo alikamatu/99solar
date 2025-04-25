@@ -22,7 +22,7 @@ const UploadLotForm = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [showForm, setShowForm] = useState(false); // Toggle form visibility
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setLotData({ ...lotData, [name]: value });
   };
