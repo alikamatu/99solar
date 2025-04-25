@@ -1,10 +1,15 @@
 import React, { useState } from "react";
 import { TextField, Button, Snackbar, Alert, MenuItem, AlertColor } from "@mui/material";
 
+import { Dispatch, SetStateAction } from "react";
+import { Lot } from "../dashboard/customer-bidding/page";
+
 interface UploadLotFormProps {
+  setLots: Dispatch<SetStateAction<Lot[]>>;
 }
 
-export default function UploadLotForm({}: UploadLotFormProps) {
+
+export default function UploadLotForm({ setLots }: UploadLotFormProps) {
   const [lotData, setLotData] = useState({
     lotNumber: "",
     itemDescription: "",
@@ -44,6 +49,7 @@ export default function UploadLotForm({}: UploadLotFormProps) {
     const userId = localStorage.getItem("userId");
     if (!userId) {
       setSnackbar({ open: true, message: "User ID not found. Please log in again.", severity: "error" });
+      setLots([]);
       return;
     }
     try {

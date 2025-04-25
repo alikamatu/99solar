@@ -310,7 +310,7 @@ export default function LotsPage() {
             </Button>
           )}
         </form>
-        <UploadLotForm />
+        <UploadLotForm setLots={setLots} />
 
         <div className="flex justify-end">
           <Button
