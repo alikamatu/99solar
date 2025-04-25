@@ -36,8 +36,7 @@ type Lot = {
 };
 
 export default function LotsPage() {
-
-  const [lots, setLots] = useState([]);
+    const [lots, setLots] = useState<Lot[]>([]); // Explicitly define the type of lots
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
     const [file, setFile] = useState<File | null>(null);
