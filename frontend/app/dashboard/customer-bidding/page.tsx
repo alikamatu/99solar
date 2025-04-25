@@ -67,7 +67,7 @@ export default function LotsPage() {
     }
   }, [filters]);
 
-  const handleUpload = async (e) => {
+  const handleUpload = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     if (!file) {
       setSnackbar({ open: true, message: "Please select a file.", severity: "error" });
@@ -76,7 +76,7 @@ export default function LotsPage() {
 
     // Validate file type (e.g., CSV, Excel)
     const validTypes = ["text/csv", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"];
-    if (!validTypes.includes(file.type)) {
+    if (file && !validTypes.includes(file.type)) {
       setSnackbar({ open: true, message: "Please upload a CSV or Excel file.", severity: "error" });
       return;
     }
