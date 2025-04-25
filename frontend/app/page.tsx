@@ -201,7 +201,7 @@ export default function LotsAndBidsPage() {
           <div className="space-y-2 mb-4">
             <p><strong>Description:</strong> {placingBid?.item_description}</p>
             <p><strong>Quantity:</strong> {placingBid?.quantity}</p>
-            <p><strong>Base Price:</strong> ${placingBid?.base_price?.toFixed(2)}</p>
+            <p><strong>Base Price:</strong> ${Number(placingBid?.base_price || 0).toFixed(2)}</p>
           </div>
           <form onSubmit={handleBidSubmit}>
             <TextField
@@ -215,7 +215,7 @@ export default function LotsAndBidsPage() {
               InputProps={{
                 startAdornment: <InputAdornment position="start">$</InputAdornment>,
               }}
-              helperText={`Must be higher than $${placingBid?.base_price?.toFixed(2)}`}
+              helperText={`Must be higher than $${Number(placingBid?.base_price || 0).toFixed(2)}`}
             />
           </form>
         </DialogContent>
