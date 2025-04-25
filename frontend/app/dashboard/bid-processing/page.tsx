@@ -46,7 +46,15 @@ export default function BidManagementPage() {
     setLoading(true);
     setError("");
     try {
-      const queryParams = new URLSearchParams(filters).toString();
+      // Convert filters to a string-compatible object
+      const queryParams = new URLSearchParams(
+        Object.entries({
+          ...filters,
+          page: filters.page.toString(),
+          limit: filters.limit.toString(),
+        })
+      ).toString();
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bids?${queryParams}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
