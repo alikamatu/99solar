@@ -64,7 +64,7 @@ const UploadLotForm = () => {
         availableFrom: "",
         availableTo: "",
       });
-    } catch (error) {
+    } catch {
       setSnackbar({ open: true, message: "Failed to upload lot.", severity: "error" });
     }
   };
