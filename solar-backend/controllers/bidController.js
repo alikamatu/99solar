@@ -82,7 +82,6 @@ exports.createBid = async (req, res) => {
       return res.status(400).json({ error: 'Invalid user_id or lot_id format' });
     }
 
-    // Insert the bid into the database
     const result = await pool.query(
       `INSERT INTO bids (id, user_id, lot_id, bid_amount, submitted_at, status)
        VALUES (gen_random_uuid(), $1, $2, $3, NOW(), 'pending')
@@ -90,14 +89,13 @@ exports.createBid = async (req, res) => {
       [userId, lot_id, bid_amount]
     );
 
-    res.status(201).json(result.rows[0]); // Return the created bid
+    res.status(201).json(result.rows[0]); 
   } catch (error) {
     console.error('Error creating bid:', error);
     res.status(500).json({ error: 'Failed to create bid' });
   }
 };
 
-// Award a bid to a user
 exports.awardBid = async (req, res) => {
   const client = await pool.connect();
   
@@ -107,7 +105,6 @@ exports.awardBid = async (req, res) => {
     
     await client.query('BEGIN');
     
-    // 1. Get the bid details
     const bidQuery = await client.query(
       `SELECT id, user_id, lot_id, bid_amount 
        FROM bids WHERE id = $1 AND status = 'pending' FOR UPDATE`,
@@ -120,20 +117,17 @@ exports.awardBid = async (req, res) => {
     
     const bid = bidQuery.rows[0];
     
-    // 2. Update the bid status to awarded
     await client.query(
       `UPDATE bids SET status = 'awarded' WHERE id = $1`,
       [bidId]
     );
     
-    // 3. Reject all other bids for this lot
     await client.query(
       `UPDATE bids SET status = 'rejected' 
        WHERE lot_id = $1 AND id != $2 AND status = 'pending'`,
       [bid.lot_id, bidId]
     );
 
-    // 4. Create awarded bid record
     const awardedBid = await client.query(
       `INSERT INTO awarded_bids 
        (lot_id, awarded_to, final_price, commission)
@@ -141,7 +135,6 @@ exports.awardBid = async (req, res) => {
       [bid.lot_id, bid.user_id, final_price, commission]
     );
     
-    // 5. Update lot status or availability if needed
     await client.query(
       `UPDATE lots SET available_to = NOW() WHERE id = $1`,
       [bid.lot_id]
@@ -210,10 +203,10 @@ exports.getUserProfile = async (req, res) => {
     // Query to fetch user profile
     const userQuery = `
       SELECT 
-        name, 
+        name,
         email, 
         (SELECT COUNT(*) FROM bids WHERE id = $1) AS bids_placed,
-        (SELECT COUNT(*) FROM bids WHERE id = $1 AND status = 'winning') AS active_bids,
+        (SELECT COUNT(*) FROM bids WHERE id = $1 AND status = 'pending') AS active_bids,
         (SELECT COUNT(*) FROM awarded_bids WHERE id = $1) AS won_bids
       FROM users
       WHERE id = $1

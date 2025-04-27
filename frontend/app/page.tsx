@@ -97,6 +97,18 @@ export default function LotsAndBidsPage() {
     won_bids: 0,
   });
 
+useEffect(() => {
+    const isAuthenticated = localStorage.getItem("isAuthenticated");
+    if (isAuthenticated !== "true") {
+      setSnackbar({
+        open: true,
+        message: "You need to log in to access this page.",
+        severity: "warning",
+      });
+      router.push("/login");
+    }
+  }, [router]);
+
   const fetchLots = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -336,6 +348,7 @@ export default function LotsAndBidsPage() {
     },
     { field: "created_at", headerName: "Date", width: 150 },
   ];
+
 
   return (
     <ThemeProvider theme={darkTheme}>
