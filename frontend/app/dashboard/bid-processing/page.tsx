@@ -20,7 +20,7 @@ import {
   Pagination,
   InputAdornment,
 } from "@mui/material";
-import { Search, Clear, CheckCircle, Cancel } from "@mui/icons-material";
+import { Search, CheckCircle, Cancel } from "@mui/icons-material";
 import { debounce } from "lodash";
 import { GridRenderCellParams } from "@mui/x-data-grid"; // Import the type
 import { RefreshCcw } from "lucide-react";

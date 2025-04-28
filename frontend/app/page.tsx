@@ -18,13 +18,7 @@ import {
   Pagination,
   InputAdornment,
   Avatar,
-  AppBar,
-  Toolbar,
   Typography,
-  IconButton,
-  Menu,
-  MenuItem,
-  Divider,
   Card,
   CardContent,
   CardHeader,
@@ -32,10 +26,9 @@ import {
   Tabs,
   Tab,
   Paper,
-  Badge,
 } from "@mui/material";
 import { GridRenderCellParams } from "@mui/x-data-grid";
-import { Gavel, Cancel, CheckCircle, AccountCircle, Logout, Notifications, Home, Person, Favorite } from "@mui/icons-material";
+import { Gavel, Cancel, CheckCircle, Logout, Person } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
@@ -256,13 +249,13 @@ useEffect(() => {
     router.push("/login");
   };
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  // const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+  //   setAnchorEl(event.currentTarget);
+  // };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
+  // const handleMenuClose = () => {
+  //   setAnchorEl(null);
+  // };
 
   useEffect(() => {
     fetchLots();

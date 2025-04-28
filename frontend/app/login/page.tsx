@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const [unverifiedEmail] = useState<string | null>(null);
   const router = useRouter();
   const { setAuth } = useAuth();
   const [isError, setIsError] = useState("");
@@ -36,6 +36,7 @@ export default function LoginPage() {
 
       if (!response.ok) {
         throw new Error(data.error || 'Login failed');
+
       }
 
       if (data.user.is_verified === false) {
