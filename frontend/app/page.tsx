@@ -80,7 +80,6 @@ export default function LotsAndBidsPage() {
   });
   const [filters, setFilters] = useState({ page: 1, limit: 20 });
   const [totalPages, setTotalPages] = useState(1);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [userProfile, setUserProfile] = useState({
     name: "User",
@@ -160,7 +159,7 @@ useEffect(() => {
   
       const data = await response.json();
       setUserBids(data.bids || []);
-    } catch (error) {
+    } catch {
       setSnackbar({ open: true, message: "Failed to load your bids.", severity: "error" });
     } finally {
       setProfileLoading(false);
@@ -238,7 +237,7 @@ useEffect(() => {
       fetchUserBids();
       fetchUserProfile();
       setSnackbar({ open: true, message: "Bid placed successfully!", severity: "success" });
-    } catch (error) {
+    } catch {
       setSnackbar({ open: true, message: "Failed to place bid.", severity: "error" });
     }
   };
