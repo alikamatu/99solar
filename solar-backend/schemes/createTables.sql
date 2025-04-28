@@ -4,6 +4,9 @@ CREATE TABLE users (
   email TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
   role TEXT CHECK (role IN ('admin', 'customer')) NOT NULL,
+  bids_placed INTEGER DEFAULT 0,
+  active_bids INTEGER DEFAULT 0,
+  won_bids INTEGER DEFAULT 0;
   reset_token TEXT,
   reset_token_expiry TIMESTAMP,
   verification_code TEXT,

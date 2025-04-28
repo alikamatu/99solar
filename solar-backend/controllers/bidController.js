@@ -65,20 +65,17 @@ exports.getBids = async (req, res) => {
   }
 };
 
-
 exports.createBid = async (req, res) => {
   try {
     const { userId, lot_id, bid_amount } = req.body;
 
     // Validate required fields
     if (!userId || !lot_id || !bid_amount) {
-      console.log('user_id, lot_id, and bid_amount are required');
       return res.status(400).json({ error: 'user_id, lot_id, and bid_amount are required' });
     }
 
     // Validate UUIDs
     if (!isUUID(userId) || !isUUID(lot_id)) {
-      console.log('Invalid user_id or lot_id format');
       return res.status(400).json({ error: 'Invalid user_id or lot_id format' });
     }
 
@@ -89,7 +86,16 @@ exports.createBid = async (req, res) => {
       [userId, lot_id, bid_amount]
     );
 
-    res.status(201).json(result.rows[0]); 
+    // Increment bids_placed and active_bids
+    await pool.query(
+      `UPDATE users
+       SET bids_placed = bids_placed + 1,
+           active_bids = active_bids + 1
+       WHERE id = $1`,
+      [userId]
+    );
+
+    res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Error creating bid:', error);
     res.status(500).json({ error: 'Failed to create bid' });
@@ -98,30 +104,30 @@ exports.createBid = async (req, res) => {
 
 exports.awardBid = async (req, res) => {
   const client = await pool.connect();
-  
+
   try {
     const { id: bidId } = req.params;
     const { final_price, commission } = req.body;
-    
+
     await client.query('BEGIN');
-    
+
     const bidQuery = await client.query(
       `SELECT id, user_id, lot_id, bid_amount 
        FROM bids WHERE id = $1 AND status = 'pending' FOR UPDATE`,
       [bidId]
     );
-    
+
     if (bidQuery.rows.length === 0) {
       return res.status(404).json({ error: 'Bid not found or already processed' });
     }
-    
+
     const bid = bidQuery.rows[0];
-    
+
     await client.query(
       `UPDATE bids SET status = 'awarded' WHERE id = $1`,
       [bidId]
     );
-    
+
     await client.query(
       `UPDATE bids SET status = 'rejected' 
        WHERE lot_id = $1 AND id != $2 AND status = 'pending'`,
@@ -134,14 +140,23 @@ exports.awardBid = async (req, res) => {
        VALUES ($1, $2, $3, $4) RETURNING *`,
       [bid.lot_id, bid.user_id, final_price, commission]
     );
-    
+
     await client.query(
       `UPDATE lots SET available_to = NOW() WHERE id = $1`,
       [bid.lot_id]
     );
-    
+
+    // Update user counts
+    await client.query(
+      `UPDATE users
+       SET active_bids = active_bids - 1,
+           won_bids = won_bids + 1
+       WHERE id = $1`,
+      [bid.user_id]
+    );
+
     await client.query('COMMIT');
-    
+
     res.json({
       message: 'Bid awarded successfully',
       awardedBid: awardedBid.rows[0]
@@ -204,10 +219,10 @@ exports.getUserProfile = async (req, res) => {
     const userQuery = `
       SELECT 
         name,
-        email, 
-        (SELECT COUNT(*) FROM bids WHERE id = $1) AS bids_placed,
-        (SELECT COUNT(*) FROM bids WHERE id = $1 AND status = 'pending') AS active_bids,
-        (SELECT COUNT(*) FROM awarded_bids WHERE id = $1) AS won_bids
+        email,
+        bids_placed,
+        active_bids,
+        won_bids
       FROM users
       WHERE id = $1
     `;

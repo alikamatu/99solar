@@ -41,7 +41,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 const darkTheme = createTheme({
   palette: {
-    mode: 'light',
+    mode: 'dark',
     primary: {
       main: '#90caf9',
     },
@@ -353,7 +353,7 @@ useEffect(() => {
   return (
     <ThemeProvider theme={darkTheme}>
       <div className="min-h-screen bg-gray-900 text-white">
-        <AppBar position="static" color="primary" elevation={0}>
+        {/* <AppBar position="static" color="primary" elevation={0}>
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
               <Favorite sx={{ mr: 1 }} /> Auction House
@@ -398,7 +398,7 @@ useEffect(() => {
               </MenuItem>
             </Menu>
           </Toolbar>
-        </AppBar>
+        </AppBar> */}
 
         <div className="container mx-auto p-6">
           <Tabs
