@@ -30,7 +30,7 @@ exports.login = async (req, res) => {
 
     // Find user
     const userQuery = await pool.query(
-      'SELECT id, name, email, password, role FROM users WHERE email = $1',
+      'SELECT id, name, email, password, role, is_verified FROM users WHERE email = $1',
       [email]
     );
     

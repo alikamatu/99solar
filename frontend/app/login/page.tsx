@@ -35,12 +35,12 @@ export default function LoginPage() {
       
 
       if (!response.ok) {
-        if (data.needsVerification) {
-          setUnverifiedEmail(data.email);
-          throw new Error('Please verify your email first. Check your inbox.');
-        }
         throw new Error(data.error || 'Login failed');
       }
+
+      if (data.user.is_verified === false) {
+        setIsError("Please verify your email first.");
+        }
 
       setAuth({
         isAuthenticated: true,
@@ -53,8 +53,11 @@ export default function LoginPage() {
 
       localStorage.setItem('isAuthenticated', JSON.stringify(true));
       localStorage.setItem('userId', data.user.id);
+      localStorage.setItem('userRole', data.user.role);
 
-      router.push(data.user.role === 'admin' ? '/dashboard' : '/');
+
+      router.push(data.user.is_verified === false ? '/verify-email' : data.user.role === 'admin' ? '/dashboard' : '/');
+      // router.push(data.user.role === 'admin' ? '/dashboard' : '/');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Login failed');
       setIsError("Invalid email or password");
