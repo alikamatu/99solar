@@ -23,6 +23,7 @@ import {
 import { Search, Clear, CheckCircle, Cancel } from "@mui/icons-material";
 import { debounce } from "lodash";
 import { GridRenderCellParams } from "@mui/x-data-grid"; // Import the type
+import { RefreshCcw } from "lucide-react";
 
 type Bid = {
   id: string;
@@ -214,11 +215,11 @@ export default function BidManagementPage() {
           <Button
             variant="outlined"
             color="secondary"
-            startIcon={<Clear />}
+            startIcon={<RefreshCcw />}
             onClick={handleClearFilters}
             className="w-full md:w-auto"
           >
-            Clear
+            Refresh
           </Button>
         </div>
       </div>
