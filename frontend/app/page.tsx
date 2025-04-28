@@ -346,7 +346,7 @@ useEffect(() => {
         return <Chip label={params.value} color={color} size="small" />;
       },
     },
-    { field: "created_at", headerName: "Date", width: 150 },
+    { field: "bid_time", headerName: "Date", width: 150 },
   ];
 
 
