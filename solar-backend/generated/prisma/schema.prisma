@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                  String              @id @default(uuid()) @db.Uuid
+  name                String
+  email               String              @unique
+  password            String
+  role                String              @default("customer") @db.VarChar
+  bids_placed         Int                 @default(0)
+  active_bids         Int                 @default(0)
+  won_bids            Int                 @default(0)
+  reset_token         String?
+  reset_token_expiry  DateTime?
+  verification_code   String?
+  code_expires_at     DateTime?
+  is_verified         Boolean             @default(false)
+  created_at          DateTime            @default(now())
+  updated_at          DateTime            @updatedAt
+  verizon_files       VerizonFile[]
+  uploaded_files      UploadedFile[]
+  bids                Bid[]
+  awarded_bids        AwardedBid[]
+  invoices            Invoice[]
+  email_notifications EmailNotification[]
+}
+
+model VerizonFile {
+  id          String   @id @default(uuid()) @db.Uuid
+  file_name   String
+  uploaded_by String   @db.Uuid
+  upload_time DateTime @default(now())
+  cleaned     Boolean  @default(false)
+  user        User     @relation(fields: [uploaded_by], references: [id])
+  lots        Lot[]
+}
+
+model UploadedFile {
+  id             String   @id @default(uuid())
+  filename       String
+  processed_name String?
+  user_id        String   @db.Uuid
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  user           User     @relation(fields: [user_id], references: [id])
+}
+
+model Lot {
+  id                 String       @id @default(uuid()) @db.Uuid
+  verizon_file_id    String?      @db.Uuid
+  lot_number         String
+  item_description   String?
+  grade              String?
+  quantity           Int?
+  base_price         Float?
+  commission_rate    Float        @default(0.10)
+  oem                String?
+  sku                String?
+  prop65_warning     String?
+  description        String?
+  disposition        String?      @db.VarChar
+  unit_awarded_price Float?
+  available_from     DateTime?
+  available_to       DateTime?
+  created_at         DateTime     @default(now())
+  updated_at         DateTime     @updatedAt
+  verizon_file       VerizonFile? @relation(fields: [verizon_file_id], references: [id])
+  bids               Bid[]
+  awarded_bids       AwardedBid[]
+}
+
+model Bid {
+  id           String    @id @default(uuid()) @db.Uuid
+  user_id      String    @db.Uuid
+  lot_id       String    @db.Uuid
+  bid_amount   Float
+  submitted_at DateTime  @default(now())
+  status       String    @default("pending") @db.VarChar
+  bid_time     DateTime?
+  user         User      @relation(fields: [user_id], references: [id])
+  lot          Lot       @relation(fields: [lot_id], references: [id])
+}
+
+model AwardedBid {
+  id          String @id @default(uuid())
+  lot_id      String @db.Uuid
+  awarded_to  String @db.Uuid
+  final_price Float
+  commission  Float
+  lot         Lot    @relation(fields: [lot_id], references: [id])
+  user        User   @relation(fields: [awarded_to], references: [id])
+}
+
+model Invoice {
+  id              String   @id @default(uuid())
+  user_id         String   @db.Uuid
+  awarded_bid_ids String[]
+  invoice_number  String   @unique
+  generated_at    DateTime @default(now())
+  total_amount    Float
+  pdf_url         String?
+  user            User     @relation(fields: [user_id], references: [id])
+}
+
+model EmailNotification {
+  id                Int       @id @default(autoincrement())
+  user_id           String?   @db.Uuid
+  subject           String
+  message           String
+  notification_type String?
+  is_sent           Boolean   @default(false)
+  sent_at           DateTime?
+  created_at        DateTime  @default(now())
+  user              User?     @relation(fields: [user_id], references: [id])
+}

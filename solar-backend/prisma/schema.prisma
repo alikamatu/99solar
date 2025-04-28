@@ -10,7 +10,7 @@ datasource db {
 }
 
 model User {
-  id                 String   @id @default(uuid())
+  id                 String   @id @default(uuid()) @db.Uuid
   name               String
   email              String   @unique
   password           String
@@ -34,7 +34,7 @@ model User {
 }
 
 model VerizonFile {
-  id          String   @id @default(uuid())
+  id          String   @id @default(uuid()) @db.Uuid
   file_name   String
   uploaded_by String   @db.Uuid
   upload_time DateTime @default(now())
@@ -42,7 +42,6 @@ model VerizonFile {
   user        User     @relation(fields: [uploaded_by], references: [id])
   lots        Lot[]
 }
-
 model UploadedFile {
   id             String   @id @default(uuid())
   filename       String
@@ -54,7 +53,7 @@ model UploadedFile {
 }
 
 model Lot {
-  id                  String   @id @default(uuid())
+  id                  String   @id @default(uuid()) @db.Uuid
   verizon_file_id     String?  @db.Uuid
   lot_number          String
   item_description    String?
@@ -62,8 +61,8 @@ model Lot {
   quantity            Int?
   base_price          Float?
   commission_rate     Float    @default(0.10)
-  oem                String?
-  sku                String?
+  oem                 String?
+  sku                 String?
   prop65_warning      String?
   description         String?
   disposition         String?  @db.VarChar
@@ -78,7 +77,7 @@ model Lot {
 }
 
 model Bid {
-  id          String   @id @default(uuid())
+  id          String   @id @default(uuid()) @db.Uuid
   user_id     String   @db.Uuid
   lot_id      String   @db.Uuid
   bid_amount  Float
