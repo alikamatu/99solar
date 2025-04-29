@@ -297,6 +297,7 @@ useEffect(() => {
     {
       field: "actions",
       headerName: "Actions",
+      width: 150,
       renderCell: (params: GridRenderCellParams) => (
         <Tooltip title="Place a bid on this lot">
           <Button
