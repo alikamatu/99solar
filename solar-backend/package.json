@@ -6,13 +6,12 @@
     "start": "nodemon app.js",
     "dev": "nodemon app.js",
     "build": "echo 'Skipping build step'",
-    "lint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "Admin backend for customer bidding platform",
+  "description": "",
   "dependencies": {
     "@prisma/client": "^6.6.0",
     "adm-zip": "^0.5.16",
