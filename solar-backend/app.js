@@ -8,14 +8,16 @@ const bidRoute = require('./routes/bidRoute');
 
 const app = express();
 
-const corsOptions = {
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-};
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: false,
+  })
+);
 
-app.use(cors(corsOptions));
+const PORT = process.env.PORT || 1000;
+
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
@@ -24,32 +26,12 @@ app.use('/api/lots', lotRoute);
 app.use('/api/bids', bidRoute);
 
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'UP',
-    timestamp: new Date().toISOString()
-  });
+
+app.get("/", (req, res) => {
+  res.send("Hello, World!");
 });
 
-app.get('/', (req, res) => {
-  res.status(200).json({
-    message: 'Welcome to the Solar Auction API',
-    timestamp: new Date().toISOString()
-  });
-});
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    success: false,
-    error: 'Internal server error'
-  });
-});
-
-const PORT = process.env.PORT || 1000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`CORS configured for: ${corsOptions.origin}`);
 });
