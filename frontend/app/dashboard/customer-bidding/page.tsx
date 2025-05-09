@@ -19,10 +19,10 @@ import {
   Pagination,
   InputAdornment,
 } from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DatePicker, DateFieldProps } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { Upload, Edit, Cancel, CheckCircle, Delete, ClearAll } from "@mui/icons-material";
+import { Upload, Edit, Cancel, CheckCircle, Delete, ClearAll, TextFields } from "@mui/icons-material";
 import UploadLotForm from "@/app/_components/UploadLotForm";
 
 export type Lot = {
@@ -372,13 +372,13 @@ export default function LotsPage() {
                 label="Available From"
                 value={editForm.available_from ? new Date(editForm.available_from) : null}
                 onChange={(date) => setEditForm({ ...editForm, available_from: date?.toISOString().split("T")[0] || "" })}
-                slots={{ textField: (params) => <TextField {...params} fullWidth /> }}
+                slotProps={{ textField: { fullWidth: true } }}
               />
               <DatePicker
                 label="Available To"
                 value={editForm.available_to ? new Date(editForm.available_to) : null}
                 onChange={(date) => setEditForm({ ...editForm, available_to: date?.toISOString().split("T")[0] || "" })}
-                slots={{ textField: (params) => <TextField {...params} fullWidth /> }}
+                slotProps={{ textField: { fullWidth: true } }}
               />
               <TextField
                 label="Commission Rate (%)"
