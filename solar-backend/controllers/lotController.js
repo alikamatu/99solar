@@ -7,7 +7,9 @@ exports.uploadLots = async (req, res) => {
   try {
     const userId = req.body.userId || req.user?.id; // Use userID from body or req.user
     console.log("User ID:", userId);
-
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
@@ -49,6 +51,7 @@ exports.uploadLotsFrom = async (req, res) => {
       disposition,
       availableFrom,
       availableTo,
+      updated_at = new Date().toISOString(),
     } = req.body;
 
     if (
@@ -72,13 +75,12 @@ exports.uploadLotsFrom = async (req, res) => {
     // Generate a unique ID for the lot
     const id = uuidv4();
 
-    // Insert lot into the database
     const result = await pool.query(
       `INSERT INTO lots (
          id, lot_number, item_description, grade, quantity, base_price, commission_rate, 
-         oem, sku, prop65_warning, description, disposition, available_from, available_to
+         oem, sku, prop65_warning, description, disposition, available_from, available_to, updated_at
        ) VALUES (
-         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW()
        ) RETURNING *`,
       [
         id,
@@ -87,7 +89,7 @@ exports.uploadLotsFrom = async (req, res) => {
         grade,
         quantity,
         basePrice,
-        commissionRate || 0.1, // Default commission rate
+        commissionRate || 0.1,
         oem,
         sku,
         prop65Warning,
@@ -95,6 +97,8 @@ exports.uploadLotsFrom = async (req, res) => {
         disposition,
         availableFrom,
         availableTo,
+        updated_at = new Date().toISOString(
+        ),
       ]
     );
 

@@ -19,7 +19,7 @@ import {
   Pagination,
   InputAdornment,
 } from "@mui/material";
-import { DatePicker, DateFieldProps } from "@mui/x-date-pickers";
+import { DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { Upload, Edit, Cancel, CheckCircle, Delete, ClearAll, TextFields } from "@mui/icons-material";
@@ -97,6 +97,7 @@ export default function LotsPage() {
   
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("userId", localStorage.getItem("userId") || "");
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/lots/upload`, {

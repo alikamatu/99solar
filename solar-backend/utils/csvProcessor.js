@@ -29,9 +29,9 @@ exports.processVerizonCSV = async (filename, filePath, uploadedBy) => {
               `INSERT INTO lots (
                 id, verizon_file_id, lot_number, item_description,
                 oem, sku, prop65_warning, description,
-                disposition, quantity, unit_awarded_price
+                disposition, quantity, unit_awarded_price, updated_at
               ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW()
               )`,
               [
                 uuidv4(),
