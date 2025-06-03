@@ -97,7 +97,7 @@ export default function LotsPage() {
   
     const formData = new FormData();
     formData.append("file", file);
-  
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/lots/upload`, {
         method: "POST",
