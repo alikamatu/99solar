@@ -117,7 +117,7 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
-exports.Prisma.UserScalarFieldEnum = {
+exports.Prisma.UsersScalarFieldEnum = {
   id: 'id',
   name: 'name',
   email: 'email',
@@ -135,7 +135,7 @@ exports.Prisma.UserScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
-exports.Prisma.VerizonFileScalarFieldEnum = {
+exports.Prisma.Verizon_filesScalarFieldEnum = {
   id: 'id',
   file_name: 'file_name',
   uploaded_by: 'uploaded_by',
@@ -143,7 +143,7 @@ exports.Prisma.VerizonFileScalarFieldEnum = {
   cleaned: 'cleaned'
 };
 
-exports.Prisma.UploadedFileScalarFieldEnum = {
+exports.Prisma.Uploaded_filesScalarFieldEnum = {
   id: 'id',
   filename: 'filename',
   processed_name: 'processed_name',
@@ -152,7 +152,7 @@ exports.Prisma.UploadedFileScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
-exports.Prisma.LotScalarFieldEnum = {
+exports.Prisma.LotsScalarFieldEnum = {
   id: 'id',
   verizon_file_id: 'verizon_file_id',
   lot_number: 'lot_number',
@@ -173,7 +173,7 @@ exports.Prisma.LotScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
-exports.Prisma.BidScalarFieldEnum = {
+exports.Prisma.BidsScalarFieldEnum = {
   id: 'id',
   user_id: 'user_id',
   lot_id: 'lot_id',
@@ -183,7 +183,7 @@ exports.Prisma.BidScalarFieldEnum = {
   bid_time: 'bid_time'
 };
 
-exports.Prisma.AwardedBidScalarFieldEnum = {
+exports.Prisma.Awarded_bidsScalarFieldEnum = {
   id: 'id',
   lot_id: 'lot_id',
   awarded_to: 'awarded_to',
@@ -201,7 +201,7 @@ exports.Prisma.InvoiceScalarFieldEnum = {
   pdf_url: 'pdf_url'
 };
 
-exports.Prisma.EmailNotificationScalarFieldEnum = {
+exports.Prisma.Email_notificationsScalarFieldEnum = {
   id: 'id',
   user_id: 'user_id',
   subject: 'subject',
@@ -229,14 +229,14 @@ exports.Prisma.NullsOrder = {
 
 
 exports.Prisma.ModelName = {
-  User: 'User',
-  VerizonFile: 'VerizonFile',
-  UploadedFile: 'UploadedFile',
-  Lot: 'Lot',
-  Bid: 'Bid',
-  AwardedBid: 'AwardedBid',
-  Invoice: 'Invoice',
-  EmailNotification: 'EmailNotification'
+  users: 'users',
+  verizon_files: 'verizon_files',
+  uploaded_files: 'uploaded_files',
+  lots: 'lots',
+  bids: 'bids',
+  awarded_bids: 'awarded_bids',
+  invoice: 'invoice',
+  email_notifications: 'email_notifications'
 };
 
 /**

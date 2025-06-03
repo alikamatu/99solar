@@ -56,7 +56,7 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
         
         // Store in database
         await db.query(
-          'INSERT INTO uploaded_files (filename, processed_name) VALUES ($1, $2)',
+          'INSERT INTO uploaded_files (filename, processed_name, updated_at) VALUES ($1, $2, NOW())',
           [file.originalname, outputFilename]
         );
 
