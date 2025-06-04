@@ -51,7 +51,6 @@ exports.uploadLotsFrom = async (req, res) => {
       disposition,
       availableFrom,
       availableTo,
-      updated_at = new Date().toISOString(),
     } = req.body;
 
     if (
@@ -97,8 +96,6 @@ exports.uploadLotsFrom = async (req, res) => {
         disposition,
         availableFrom,
         availableTo,
-        updated_at = new Date().toISOString(
-        ),
       ]
     );
 

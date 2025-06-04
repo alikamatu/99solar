@@ -22,7 +22,7 @@ import {
 import { DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { Upload, Edit, Cancel, CheckCircle, Delete, ClearAll, TextFields } from "@mui/icons-material";
+import { Upload, Edit, Cancel, CheckCircle, Delete, ClearAll } from "@mui/icons-material";
 import UploadLotForm from "@/app/_components/UploadLotForm";
 
 export type Lot = {
