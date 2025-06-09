@@ -111,7 +111,7 @@ useEffect(() => {
         )
       ).toString();
   
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/lots?${queryParams}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/lots/alllots?${queryParams}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },

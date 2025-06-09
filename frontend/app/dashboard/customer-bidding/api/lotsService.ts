@@ -5,7 +5,7 @@ export const fetchAllLots = async (
 ): Promise<{ data: Lot[]; totalPages: number }> => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/lots?page=${filters.page}&limit=${filters.limit}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/lots/alllots?page=${filters.page}&limit=${filters.limit}`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,

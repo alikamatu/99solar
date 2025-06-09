@@ -239,3 +239,68 @@ exports.getUserProfile = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch user profile." });
   }
 };
+
+// Award a bid
+exports.bidAwards = async (req, res) => {
+  const { bidId } = req.params;
+  const { final_price, commission } = req.body;
+
+  try {
+    // Start transaction
+    await pool.query('BEGIN');
+
+    // 1. Get bid details
+    const bidResult = await pool.query(
+      'SELECT * FROM bids WHERE id = $1 FOR UPDATE',
+      [bidId]
+    );
+    
+    if (bidResult.rows.length === 0) {
+      await pool.query('ROLLBACK');
+      return res.status(404).json({ message: 'Bid not found' });
+    }
+    
+    const bid = bidResult.rows[0];
+    
+    // 2. Update bid status to awarded
+    await pool.query(
+      'UPDATE bids SET status = \'awarded\' WHERE id = $1',
+      [bidId]
+    );
+    
+    // 3. Reject all other bids for the same lot
+    await pool.query(
+      'UPDATE bids SET status = \'rejected\' WHERE lot_id = $1 AND id != $2',
+      [bid.lot_id, bidId]
+    );
+    
+    // 4. Create an award record
+    await pool.query(
+      `INSERT INTO awards 
+        (bid_id, lot_id, user_id, final_price, commission, awarded_at) 
+        VALUES ($1, $2, $3, $4, $5, NOW())`,
+      [bidId, bid.lot_id, bid.user_id, final_price, commission]
+    );
+    
+    // Commit transaction
+    await pool.query('COMMIT');
+    
+    // 5. Return updated bid
+    const updatedBidResult = await pool.query(
+      `SELECT 
+        b.*, 
+        u.name AS user_name, 
+        u.email AS user_email 
+      FROM bids b
+      JOIN users u ON b.user_id = u.id
+      WHERE b.id = $1`,
+      [bidId]
+    );
+    
+    res.json(updatedBidResult.rows[0]);
+  } catch (error) {
+    await pool.query('ROLLBACK');
+    console.error('Error awarding bid:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};

@@ -1,28 +1,25 @@
-// app/lots/LotsPage.tsx
+// app/bids/BidManagementPage.tsx
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { CircularProgress, Snackbar, Alert, Button } from "@mui/material";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { Lot, SnackbarState } from "@/app/lots/type";
-import { fetchAllLots } from "./api/lotsService";
-import FileUploadForm from "../components/FileUploadForm";
-import ClearAllButton from "../components/ClearAllButton";
+import { CircularProgress, Snackbar, Button, Tabs, Tab, Box } from "@mui/material";
+import { Bid, LotWithBids, SnackbarState } from "@/app/lots/bids/type";
+import { fetchLotsWithBids } from "./api/bidService";
 import LotsTable from "../components/LotsTable";
-import EditLotDialog from "../components/EditLotDialog";
+import LotBidsTable from "../components/LotBidsTable";
+import AwardBidDialog from "../components/AwardBidDialog";
 
-export default function LotsPage() {
-  const [lots, setLots] = useState<Lot[]>([]);
-  const [loading, setLoading] = useState(false);
+export default function BidManagementPage() {
+  const [lots, setLots] = useState<LotWithBids[]>([]);
+  const [loading, setLoading] = useState(true);
   const [snackbar, setSnackbar] = useState<SnackbarState>({
     open: false,
     message: "",
     severity: "success",
   });
-  const [filters, setFilters] = useState({ page: 1, limit: 20 });
-  const [totalPages, setTotalPages] = useState(1);
-  const [editingLot, setEditingLot] = useState<Lot | null>(null);
+  const [selectedLot, setSelectedLot] = useState<LotWithBids | null>(null);
+  const [awardingBid, setAwardingBid] = useState<Bid | null>(null);
+  const [activeTab, setActiveTab] = useState(0);
 
   const showNotification = (
     message: string,
@@ -31,78 +28,117 @@ export default function LotsPage() {
     setSnackbar({ open: true, message, severity });
   };
 
-  const fetchLots = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, totalPages } = await fetchAllLots(filters);
+      const data = await fetchLotsWithBids();
       setLots(data);
-      setTotalPages(totalPages);
+      
+      // Auto-select first lot if none selected
+      if (!selectedLot && data.length > 0) {
+        setSelectedLot(data[0]);
+      }
     } catch (error) {
-      showNotification("Failed to load lots", "error");
+      showNotification("Failed to load bid data", "error");
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [selectedLot]);
 
   useEffect(() => {
-    fetchLots();
-  }, [fetchLots]);
+    loadData();
+  }, [loadData]);
+
+  const handleAwardSuccess = (updatedBid: Bid) => {
+    if (!selectedLot) return;
+    
+    // Update the bids in the selected lot
+    const updatedBids = selectedLot.bids.map(bid => 
+      bid.bid_id === updatedBid.bid_id ? updatedBid : bid
+    );
+    
+    // Update the lot in the main list
+    const updatedLots = lots.map(lot => 
+      lot.lot_id === selectedLot.lot_id 
+        ? { ...lot, bids: updatedBids } 
+        : lot
+    );
+    
+    setLots(updatedLots);
+    setSelectedLot({ ...selectedLot, bids: updatedBids });
+    showNotification("Bid awarded successfully", "success");
+    setAwardingBid(null);
+  };
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  };
 
   const handleCloseSnackbar = () => {
     setSnackbar(prev => ({ ...prev, open: false }));
   };
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <div className="container mx-auto p-6 space-y-6">
-        <h1 className="text-3xl font-bold text-gray-800">Lots Management</h1>
+    <div className="container mx-auto p-6 space-y-6">
+      <h1 className="text-3xl font-bold text-gray-800">Bid Management</h1>
 
-        <FileUploadForm 
-          onUploadSuccess={fetchLots} 
+      <Tabs value={activeTab} onChange={handleTabChange} className="mb-6">
+        <Tab label="All Lots" />
+        <Tab 
+          label="Lot Details" 
+          disabled={!selectedLot} 
+        />
+      </Tabs>
+
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <CircularProgress size={60} />
+        </div>
+      ) : (
+        <>
+          {activeTab === 0 && (
+            <LotsTable
+              lots={lots}
+              selectedLot={selectedLot}
+              onSelectLot={(lot) => {
+                setSelectedLot(lot);
+                setActiveTab(1);
+              }}
+            />
+          )}
+
+          {activeTab === 1 && selectedLot && (
+            <LotBidsTable
+              lot={selectedLot}
+              onAwardBid={setAwardingBid}
+              onRefresh={loadData}
+            />
+          )}
+        </>
+      )}
+
+      {awardingBid && (
+        <AwardBidDialog
+          bid={awardingBid}
+          onClose={() => setAwardingBid(null)}
+          onSuccess={handleAwardSuccess}
           showNotification={showNotification}
         />
+      )}
 
-        <ClearAllButton 
-          onClearSuccess={() => setLots([])} 
-          showNotification={showNotification}
-        />
-
-        <LotsTable
-          lots={lots}
-          loading={loading}
-          filters={filters}
-          totalPages={totalPages}
-          setFilters={setFilters}
-          setEditingLot={setEditingLot}
-          showNotification={showNotification}
-        />
-
-        {editingLot && (
-          <EditLotDialog
-            lot={editingLot}
-            onClose={() => setEditingLot(null)}
-            onSaveSuccess={(updatedLot) => {
-              setLots(lots.map(l => l.id === updatedLot.id ? updatedLot : l));
-              showNotification("Lot updated successfully", "success");
-            }}
-            showNotification={showNotification}
-          />
-        )}
-
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={6000}
-          onClose={handleCloseSnackbar}
-        >
-          <Alert
-            onClose={handleCloseSnackbar}
-            severity={snackbar.severity}
-            sx={{ width: "100%" }}
-          >
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
-      </div>
-    </LocalizationProvider>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <div className={`px-4 py-2 rounded shadow-lg ${
+          snackbar.severity === "success" 
+            ? "bg-green-100 text-green-800" 
+            : "bg-red-100 text-red-800"
+        }`}>
+          {snackbar.message}
+        </div>
+      </Snackbar>
+    </div>
   );
 }

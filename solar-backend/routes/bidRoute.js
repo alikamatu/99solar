@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { getBids, awardBid, createBid, getUserBids, getUserProfile } = require('../controllers/bidController');
+const { getBids, awardBid, createBid, getUserBids, getUserProfile, bidAwards } = require('../controllers/bidController');
 const { getUsers, updateUser } = require('../controllers/userController');
 
 const router = express.Router();
@@ -49,6 +49,7 @@ router.get('/', getBids)
   });
 
 router.post('/addbid', createBid);
+router.post('/bids/:bidId/award', bidAwards)
 
 router.post('/:id/award', awardBid)
   .post('/:id/award', (req, res, next) => {

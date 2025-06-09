@@ -9,11 +9,10 @@ import { toast } from '../components/ui/use-toast';
 import axios from 'axios';
 
 
-// Define interfaces for processed files and errors
 interface ProcessedFile {
   originalName: string;
   processedName: string;
-  downloadLink: string; // Always provided by backend as relative path
+  downloadLink: string;
   size?: string;
   downloading?: boolean;
 }
@@ -23,8 +22,7 @@ interface ProcessingError {
   error: string;
 }
 
-// Base URL for the backend API (matches backend setup)
-const BASE_URL = 'http://localhost:1000'; // No /api prefix as per backend routes
+const BASE_URL = 'http://localhost:1000'; 
 
 export default function FileManagementPage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -33,7 +31,6 @@ export default function FileManagementPage() {
   const [processedFiles, setProcessedFiles] = useState<ProcessedFile[]>([]);
   const [errors, setErrors] = useState<ProcessingError[]>([]);
 
-  // Handle file selection
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
@@ -41,12 +38,10 @@ export default function FileManagementPage() {
     }
   }, []);
 
-  // Remove a specific file from the list
   const handleRemoveFile = useCallback((index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
   }, []);
 
-  // Clear all files and reset state
   const handleClearAll = useCallback(() => {
     setFiles([]);
     setProcessedFiles([]);
@@ -54,7 +49,6 @@ export default function FileManagementPage() {
     setProgress(0);
   }, []);
 
-  // Submit files for processing
   const handleSubmit = async () => {
     if (files.length === 0) {
       toast({
@@ -85,10 +79,9 @@ export default function FileManagementPage() {
       }
 
       const result = response.data;
-      // Prepend BASE_URL to the relative downloadLink
       const updatedProcessedFiles = (result.processedFiles || []).map((file: ProcessedFile) => ({
         ...file,
-        downloadLink: `${BASE_URL}/api/files/downloads/${file.downloadLink}`, // Convert to absolute URL
+        downloadLink: `${BASE_URL}/api/files/downloads/${file.downloadLink}`, 
       }));
       setProcessedFiles(updatedProcessedFiles);
 

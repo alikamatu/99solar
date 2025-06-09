@@ -181,3 +181,43 @@ exports.clearLots = async (req, res) => {
     res.status(500).json({ error: "Failed to clear lots." });
   }
 };
+
+// Get all lots with bids (ranked by highest bid)
+exports.rankLots = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        l.id AS lot_id,
+        l.lot_number,
+        l.item_description,
+        COALESCE(MAX(b.bid_amount), 0) AS highest_bid,
+        COUNT(b.id) AS bid_count,
+        JSON_AGG(
+          JSON_BUILD_OBJECT(
+            'bid_id', b.id,
+            'bid_amount', b.bid_amount,
+            'bid_time', b.bid_time,
+            'status', b.status,
+            'user_id', u.id,
+            'user_name', u.name,
+            'user_email', u.email
+          ) ORDER BY b.bid_amount DESC
+        ) AS bids
+      FROM lots l
+      LEFT JOIN bids b ON l.id = b.lot_id
+      LEFT JOIN users u ON b.user_id = u.id
+      GROUP BY l.id
+      ORDER BY l.lot_number
+    `);
+
+    const lots = result.rows.map(row => ({
+      ...row,
+      bids: row.bids.filter(bid => bid.bid_id !== null)
+    }));
+
+    res.json(lots);
+  } catch (error) {
+    console.error('Error fetching lots:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};

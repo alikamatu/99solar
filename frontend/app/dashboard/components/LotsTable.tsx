@@ -1,117 +1,88 @@
-import { DataGrid, GridRenderCellParams } from "@mui/x-data-grid";
-import { Button, Tooltip, Pagination, CircularProgress, Alert } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { SnackbarState, Filters, Lot } from "@/app/lots/type";
-
+import { LotWithBids } from "@/app/lots/bids/type";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow, 
+  Paper,
+  Button,
+  Chip
+} from "@mui/material";
 
 interface LotsTableProps {
-  lots: Lot[];
-  loading: boolean;
-  filters: Filters;
-  totalPages: number;
-  setFilters: (filters: Filters) => void;
-  setEditingLot: (lot: Lot) => void;
-  showNotification: (message: string, severity: SnackbarState["severity"]) => void;
+  lots: LotWithBids[];
+  selectedLot: LotWithBids | null;
+  onSelectLot: (lot: LotWithBids) => void;
 }
 
-export default function LotsTable({
-  lots,
-  loading,
-  filters,
-  totalPages,
-  setFilters,
-  setEditingLot,
-  showNotification
+export default function LotsTable({ 
+  lots, 
+  selectedLot, 
+  onSelectLot 
 }: LotsTableProps) {
-  const handleDelete = async (lotId: string | number) => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/lots/${lotId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-
-      if (!response.ok) throw new Error("Deletion failed");
-      showNotification("Lot deleted successfully", "success");
-      return true;
-    } catch (error) {
-      showNotification("Failed to delete lot", "error");
-      return false;
-    }
-  };
-
-  const columns = [
-    { field: "lot_number", headerName: "Lot Number", width: 120 },
-    { field: "item_description", headerName: "Description", width: 200 },
-    { field: "quantity", headerName: "Quantity", width: 120 },
-    { field: "commission_rate", headerName: "Commission (%)", width: 120 },
-    { field: "available_from", headerName: "Available From", width: 150 },
-    { field: "available_to", headerName: "Available To", width: 150 },
-    { field: "base_price", headerName: "Base Price", width: 120 },
-    {
-      field: "actions",
-      headerName: "Actions",
-      width: 200,
-      renderCell: (params: GridRenderCellParams) => (
-        <div className="flex gap-2">
-          <Tooltip title="Edit">
-            <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              startIcon={<EditIcon />}
-              onClick={() => setEditingLot(params.row)}
-            >
-              Edit
-            </Button>
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button
-              variant="outlined"
-              color="error"
-              size="small"
-              startIcon={<DeleteIcon />}
-              onClick={() => handleDelete(params.row.id)}
-            >
-              Delete
-            </Button>
-          </Tooltip>
-        </div>
-      ),
-    },
-  ];
-
-  if (loading) return <CircularProgress className="block mx-auto mt-10" />;
-  
-  if (!lots.length) {
+  if (lots.length === 0) {
     return (
-      <Alert severity="info" className="my-6">
-        No lots available. Try uploading a file.
-      </Alert>
+      <div className="bg-white rounded-lg shadow p-6 text-center">
+        <h3 className="text-lg font-medium text-gray-500">
+          No lots available with bids
+        </h3>
+        <p className="mt-2 text-gray-400">
+          Try creating new lots or encouraging bidders
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <DataGrid
-        rows={lots}
-        columns={columns}
-        paginationModel={{ pageSize: filters.limit, page: filters.page - 1 }}
-        pageSizeOptions={[20]}
-        disableRowSelectionOnClick
-        autoHeight
-        getRowId={(row) => row.id}
-        className="border-0"
-      />
-      
-      <div className="flex justify-center py-4">
-        <Pagination
-          count={totalPages}
-          page={filters.page}
-          onChange={(_, page) => setFilters({ ...filters, page })}
-          color="primary"
-        />
-      </div>
-    </div>
+    <TableContainer component={Paper} className="shadow-lg rounded-lg">
+      <Table>
+        <TableHead className="bg-gray-50">
+          <TableRow>
+            <TableCell className="font-bold">Lot #</TableCell>
+            <TableCell className="font-bold">Description</TableCell>
+            <TableCell className="font-bold text-right">Bids</TableCell>
+            <TableCell className="font-bold text-right">Highest Bid</TableCell>
+            <TableCell className="font-bold">Actions</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {lots.map((lot) => (
+            <TableRow 
+              key={lot.lot_id}
+              className={selectedLot?.lot_id === lot.lot_id ? "bg-blue-50" : ""}
+            >
+              <TableCell className="font-medium">{lot.lot_number}</TableCell>
+              <TableCell className="max-w-xs truncate">
+                {lot.item_description}
+              </TableCell>
+              <TableCell className="text-right">
+                <Chip 
+                  label={lot.bid_count} 
+                  color="primary" 
+                  size="small" 
+                />
+              </TableCell>
+              <TableCell className="text-right font-bold">
+                {typeof lot.highest_bid === "number" && !isNaN(lot.highest_bid)
+                  ? `$${lot.highest_bid.toFixed(2)}`
+                  : "$0.00"}
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  size="small"
+                  onClick={() => onSelectLot(lot)}
+                >
+                  View Bids
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }
