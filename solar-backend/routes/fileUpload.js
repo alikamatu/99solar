@@ -135,12 +135,15 @@ async function processCSV(filePath) {
         const cleanedRow = {};
         const entries = Object.entries(row);
         
-        // Keep all columns except index 3 (Column D)
-        entries.forEach(([key, value], index) => {
-          if (index !== 3) {
+      entries.forEach(([key, value], index) => {
+        if (index !== 3) { 
+          if (index === 6) {
+            cleanedRow[key] = value ? Math.round(Number(value)) : 0;
+          } else {
             cleanedRow[key] = value;
           }
-        });
+        }
+      });
         
       csvData.push(cleanedRow);
     });

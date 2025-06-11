@@ -22,7 +22,7 @@ interface ProcessingError {
   error: string;
 }
 
-const BASE_URL = 'http://localhost:1000'; 
+const BASE_URL = 'https://nine9solar.onrender.com'; 
 
 export default function FileManagementPage() {
   const [files, setFiles] = useState<File[]>([]);
