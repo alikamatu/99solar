@@ -6,7 +6,6 @@ import {
   DialogActions, 
   Button,
   TextField,
-  Grid
 } from "@mui/material";
 import { useState } from "react";
 import { awardBid } from "../customer-bidding/api/bidService";
@@ -60,56 +59,57 @@ export default function AwardBidDialog({
         Award Bid #{bid.bid_id}
       </DialogTitle>
       
-      <DialogContent className="p-6">
-        <Grid container spacing={3} className="mb-4">
-          <Grid item xs={6}>
-            <div className="text-sm text-gray-500">Bidder</div>
-            <div className="font-medium">{bid.user_name}</div>
-          </Grid>
-          <Grid item xs={6}>
-            <div className="text-sm text-gray-500">Current Bid</div>
-            <div className="font-medium">${bid.bid_amount.toFixed(2)}</div>
-          </Grid>
-          <Grid item xs={6}>
-            <div className="text-sm text-gray-500">Bidder Email</div>
-            <div className="font-medium">{bid.user_email}</div>
-          </Grid>
-          <Grid item xs={6}>
-            <div className="text-sm text-gray-500">Bid Time</div>
-            <div className="font-medium">
-              {new Date(bid.bid_time).toLocaleString()}
-            </div>
-          </Grid>
-        </Grid>
+<DialogContent className="p-6">
+  <div className="grid grid-cols-2 gap-6 mb-4"> {/* Replace Grid container */}
+    <div> {/* Replace Grid item */}
+      <div className="text-sm text-gray-500">Bidder</div>
+      <div className="font-medium">{bid.user_name}</div>
+    </div>
+    <div>
+      <div className="text-sm text-gray-500">Current Bid</div>
+      <div className="font-medium">${bid.bid_amount.toFixed(2)}</div>
+    </div>
+    <div>
+      <div className="text-sm text-gray-500">Bidder Email</div>
+      <div className="font-medium">{bid.user_email}</div>
+    </div>
+    <div>
+      <div className="text-sm text-gray-500">Bid Time</div>
+      <div className="font-medium">
+        {new Date(bid.bid_time).toLocaleString()}
+      </div>
+    </div>
+  </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <TextField
-            label="Final Price"
-            type="number"
-            value={form.final_price}
-            onChange={(e) => setForm({...form, final_price: e.target.value})}
-            fullWidth
-            required
-            inputProps={{ step: "0.01", min: "0" }}
-            InputProps={{
-              startAdornment: <span className="mr-2">$</span>,
-            }}
-          />
-          
-          <TextField
-            label="Commission"
-            type="number"
-            value={form.commission}
-            onChange={(e) => setForm({...form, commission: e.target.value})}
-            fullWidth
-            required
-            inputProps={{ step: "0.01", min: "0", max: "100" }}
-            InputProps={{
-              endAdornment: <span className="ml-2">%</span>,
-            }}
-          />
-        </div>
-      </DialogContent>
+  {/* Keep your existing TextFields here */}
+  <div className="grid grid-cols-2 gap-4">
+    <TextField
+      label="Final Price"
+      type="number"
+      value={form.final_price}
+      onChange={(e) => setForm({...form, final_price: e.target.value})}
+      fullWidth
+      required
+      inputProps={{ step: "0.01", min: "0" }}
+      InputProps={{
+        startAdornment: <span className="mr-2">$</span>,
+      }}
+    />
+    
+    <TextField
+      label="Commission"
+      type="number"
+      value={form.commission}
+      onChange={(e) => setForm({...form, commission: e.target.value})}
+      fullWidth
+      required
+      inputProps={{ step: "0.01", min: "0", max: "100" }}
+      InputProps={{
+        endAdornment: <span className="ml-2">%</span>,
+      }}
+    />
+  </div>
+</DialogContent>
       
       <DialogActions className="p-4 border-t">
         <Button 
