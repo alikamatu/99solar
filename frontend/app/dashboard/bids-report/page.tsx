@@ -26,7 +26,7 @@ export default function BidReportGenerator() {
     message: '',
     severity: 'success' as 'success' | 'error' | 'warning' | 'info',
   });
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<BidData[]>([]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -47,7 +47,7 @@ export default function BidReportGenerator() {
           const worksheet = workbook.Sheets[sheetName];
           
           // Skip header row (row 1) and start from row 2
-          const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet, { header: 1, range: 1 });
+          const jsonData: (string | number | undefined)[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, range: 1 });
           
           const parsedData: BidData[] = jsonData
             .filter(row => row.length >= 7)
