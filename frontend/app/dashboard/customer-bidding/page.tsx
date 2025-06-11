@@ -1,8 +1,7 @@
-// app/bids/BidManagementPage.tsx
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { CircularProgress, Snackbar, Button, Tabs, Tab, Box } from "@mui/material";
+import { CircularProgress, Snackbar, Tabs, Tab } from "@mui/material";
 import { Bid, LotWithBids, SnackbarState } from "@/app/lots/bids/type";
 import { fetchLotsWithBids } from "./api/bidService";
 import LotsTable from "../components/LotsTable";
@@ -33,12 +32,10 @@ export default function BidManagementPage() {
     try {
       const data = await fetchLotsWithBids();
       setLots(data);
-      
-      // Auto-select first lot if none selected
       if (!selectedLot && data.length > 0) {
         setSelectedLot(data[0]);
       }
-    } catch (error) {
+    } catch {
       showNotification("Failed to load bid data", "error");
     } finally {
       setLoading(false);
@@ -52,12 +49,10 @@ export default function BidManagementPage() {
   const handleAwardSuccess = (updatedBid: Bid) => {
     if (!selectedLot) return;
     
-    // Update the bids in the selected lot
     const updatedBids = selectedLot.bids.map(bid => 
       bid.bid_id === updatedBid.bid_id ? updatedBid : bid
     );
     
-    // Update the lot in the main list
     const updatedLots = lots.map(lot => 
       lot.lot_id === selectedLot.lot_id 
         ? { ...lot, bids: updatedBids } 

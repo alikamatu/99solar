@@ -24,7 +24,7 @@ export default function ClearAllButton({
       
       onClearSuccess();
       showNotification("All lots cleared successfully", "success");
-    } catch (error) {
+    } catch {
       showNotification("Failed to clear lots", "error");
     }
   };

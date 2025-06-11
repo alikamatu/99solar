@@ -57,7 +57,7 @@ export default function FileUploadForm({
       setFile(null);
       onUploadSuccess();
       showNotification("File uploaded successfully!", "success");
-    } catch (error) {
+    } catch {
       showNotification("Upload failed. Please try again.", "error");
     }
   };

@@ -14,7 +14,7 @@ export const fetchLotsWithBids = async (): Promise<LotWithBids[]> => {
     if (!response.ok) throw new Error("Failed to fetch lots with bids");
     
     const data = await response.json();
-    return data.map((lot: any) => ({
+    return data.map((lot: LotWithBids) => ({
       ...lot,
       bids: Array.isArray(lot.bids)
         ? lot.bids.sort((a: Bid, b: Bid) => b.bid_amount - a.bid_amount)

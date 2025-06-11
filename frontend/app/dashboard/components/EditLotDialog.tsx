@@ -74,7 +74,7 @@ export default function EditLotDialog({
       const updatedLot = await response.json();
       onSaveSuccess(updatedLot);
       onClose();
-    } catch (error) {
+    } catch {
       showNotification("Failed to update lot", "error");
     }
   };
