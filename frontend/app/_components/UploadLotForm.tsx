@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { TextField, Button, Snackbar, Alert, MenuItem, AlertColor } from "@mui/material";
-
-import { Dispatch, SetStateAction } from "react";
 import { Lot } from "../dashboard/bid-processing/page";
 
 
