@@ -1,11 +1,12 @@
 import { Button, CircularProgress, TextField } from '@mui/material';
 import HistoryIcon from '@mui/icons-material/History';
+import { BidData } from '@/types/types';
 
 interface SavedReport {
   id: number;
   created_at: string;
   report_date: string;
-  report_data: any[];
+  report_data: BidData[];
 }
 
 interface ReportHistoryProps {
