@@ -5,6 +5,7 @@ const authRoutes = require('./routes/authRouth');
 const fileUploadRoute = require('./routes/fileUpload');
 const lotRoute = require('./routes/lotRoute');
 const bidRoute = require('./routes/bidRoute');
+const reportRoute = require('./routes/reportRoute');
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/files', fileUploadRoute);
 app.use('/api/lots', lotRoute);
 app.use('/api/bids', bidRoute);
+app.use('/api/reports', reportRoute);
 
 
 
