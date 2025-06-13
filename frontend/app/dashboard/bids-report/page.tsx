@@ -132,17 +132,17 @@ export default function BidReportGenerator() {
 
     try {
       const reportData = results.map(item => ({
-        'Listing ID': item.listingId,
-        'SKU': item.sku,
+        'BidID': item.listingId,
         'OEM': item.oem,
+        'SKU': item.sku,
         'Description': item.description,
-        'Highest Bid ($)': commissionApplied 
+        'Disposition': item.disposition,
+        'Quantity': item.quantity,
+        'Unit_Offer_Price': commissionApplied 
           ? applyCommission(item.unitPrice) 
           : item.unitPrice,
-        'Quantity': item.quantity,
-        'Disposition': item.disposition,
-        'Source File': item.fileName,
-        'Commission Applied': commissionApplied ? 'Yes' : 'No'
+        // 'Source File': item.fileName,
+        // 'Commission Applied': commissionApplied ? 'Yes' : 'No'
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(reportData);
