@@ -69,7 +69,7 @@ const getStarted = () => {
                   Streamline Your <span className="text-primary-600">Bid Processing</span> Workflow
                 </h1>
                 <p className="mt-6 text-xl text-gray-600 max-w-2xl">
-                  Automate CSV to Excel conversions, bid aggregation, and invoice generation for solar energy projects.
+                  Automate CSV to Excel conversions, bid aggregation, and invoice generation for your Amazion bid managemnt.
                 </p>
                 <div className="mt-10 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
                   <div onClick={() => router.push('/dashboard')}>
@@ -90,7 +90,7 @@ const getStarted = () => {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="relative"
               >
-                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-96 lg:h-[500px]" />
+                <div className="bg-[url('/avatars/wall.jpg')] bg-cover border-2 border-dashed rounded-xl w-full h-full lg:h-[500px]" />
                 <div className="absolute -bottom-6 -right-6 bg-white p-4 rounded-xl shadow-lg border border-gray-200">
                   <div className="flex items-center">
                     <div className="bg-green-100 p-2 rounded-full">
