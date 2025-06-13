@@ -23,7 +23,7 @@ const CheckIcon = (props: React.SVGProps<SVGSVGElement>) => (
 const getStarted = () => {
         localStorage.setItem('isAuthenticated', JSON.stringify(true));
         localStorage.setItem('userId', '298546ec-4025-49fb-bbaf-0e82012a5652'); 
-        localStorage.setItem('userRole', 'user');
+        localStorage.setItem('userRole', 'admin');
         router.push('/dashboard');
     };
 
@@ -89,7 +89,7 @@ const getStarted = () => {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="relative"
               >
-                <div className="bg-[url('/avatars/wall.jpg')] bg-cover border-2 border-dashed rounded-xl w-full h-full lg:h-[500px]" />
+                <div className="bg-[url('/avatars/wall.jpg')] bg-cover border-2 border-dashed rounded-xl w-full h-96 lg:h-[500px]" />
                 <div className="absolute -bottom-6 -right-6 bg-white p-4 rounded-xl shadow-lg border border-gray-200">
                   <div className="flex items-center">
                     <div className="bg-green-100 p-2 rounded-full">
