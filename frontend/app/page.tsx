@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import Head from 'next/head';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 
@@ -22,10 +21,10 @@ const CheckIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 const getStarted = () => {
-          localStorage.setItem('isAuthenticated', JSON.stringify(true));
-      localStorage.setItem('userId', '298546ec-4025-49fb-bbaf-0e82012a5652'); 
-      localStorage.setItem('userRole', 'user');
-      router.push('/dashboard');
+        localStorage.setItem('isAuthenticated', JSON.stringify(true));
+        localStorage.setItem('userId', '298546ec-4025-49fb-bbaf-0e82012a5652'); 
+        localStorage.setItem('userRole', 'user');
+        router.push('/dashboard');
     };
 
   return (
@@ -47,7 +46,7 @@ const getStarted = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="bg-primary-600 hover:bg-primary-700 text-black px-6 py-2 rounded-lg font-medium cursor-pointer"
-              onClick={() => router.push('/dashboard')}
+              onClick={getStarted}
             >
               Dashboard
             </motion.button>
@@ -72,7 +71,7 @@ const getStarted = () => {
                   Automate CSV to Excel conversions, bid aggregation, and invoice generation for your Amazion bid managemnt.
                 </p>
                 <div className="mt-10 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
-                  <div onClick={() => router.push('/dashboard')}>
+                  <div onClick={getStarted}>
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
