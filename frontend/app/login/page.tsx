@@ -57,7 +57,7 @@ export default function LoginPage() {
       localStorage.setItem('userRole', data.user.role);
 
 
-      router.push(data.user.is_verified === false ? '/verify-email' : data.user.role === 'admin' ? '/dashboard' : '/');
+      router.push(data.user.is_verified === false ? '/verify-email' : data.user.role === 'admin' ? '/dashboard' : '/dashboard');
       // router.push(data.user.role === 'admin' ? '/dashboard' : '/');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Login failed');
