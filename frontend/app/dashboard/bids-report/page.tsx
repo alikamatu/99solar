@@ -141,7 +141,7 @@ export default function BidReportGenerator() {
         'Unit_Offer_Price': commissionApplied 
           ? applyCommission(item.unitPrice) 
           : item.unitPrice,
-        // 'Source File': item.fileName,
+        'Sales Customer': item.fileName,
         // 'Commission Applied': commissionApplied ? 'Yes' : 'No'
       }));
 
