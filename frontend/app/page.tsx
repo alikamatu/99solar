@@ -68,7 +68,7 @@ const getStarted = () => {
                   Streamline Your <span className="text-primary-600">Bid Processing</span> Workflow
                 </h1>
                 <p className="mt-6 text-xl text-gray-600 max-w-2xl">
-                  Automate CSV to Excel conversions, bid aggregation, and invoice generation for your Amazion bid managemnt.
+                  Automate CSV to Excel conversions, bid aggregation, and invoice generation for your Amazon bid managemnt.
                 </p>
                 <div className="mt-10 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
                   <div onClick={getStarted}>
