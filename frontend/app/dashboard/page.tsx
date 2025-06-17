@@ -4,6 +4,7 @@ import { Users, DollarSign, Gavel, Upload } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { OverviewChart } from '../_components/overview-charts';
 import { RecentActivity } from '../_components/recent-activity';
+import FileManagementPage from './file-upload/page';
 
 // app/dashboard/page.tsx
 export default function DashboardPage() {
@@ -63,6 +64,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
         </div> */}
+        <FileManagementPage />
       </div>
     );
   }
