@@ -23,20 +23,64 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.get('/latest', async (req, res) => {
+    const { date } = req.query;
+  
+  try {
+    const result = await pool.query(
+      `SELECT id, created_at, report_date, report_data 
+       FROM reports 
+       WHERE report_date = $1 
+       ORDER BY created_at DESC`,
+      [date]
+    );
+    
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 router.get('/', async (req, res) => {
   try {
     const { date } = req.query;
     
     const result = await pool.query(
-      'SELECT * FROM reports WHERE report_date = $1 ORDER BY created_at DESC',
+      `SELECT * FROM reports 
+       WHERE report_date = $1 
+       ORDER BY report_data->>'fileName', created_at DESC`,
       [date]
     );
     
-    res.json(result.rows);
+    const parsedReports = result.rows.map(report => ({
+      ...report,
+      report_data: typeof report.report_data === 'string'
+        ? JSON.parse(report.report_data)
+        : report.report_data
+    }));
+    
+    res.json(parsedReports);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
   }
 });
+
+// router.get('/', async (req, res) => {
+//   try {
+//     const { date } = req.query;
+    
+//     const result = await pool.query(
+//       'SELECT * FROM reports WHERE report_date = $1 ORDER BY created_at DESC',
+//       [date]
+//     );
+    
+//     res.json(result.rows);
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).send('Server error');
+//   }
+// });
 
 module.exports = router;

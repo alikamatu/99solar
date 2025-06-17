@@ -59,7 +59,7 @@ export default function BidReportGenerator() {
               disposition: String(row[4] || ''),
               quantity: Number(row[5]) || 0,
               unitPrice: Number(row[6]) || 0,
-              fileName: file.name
+              fileName: file.name,
             }))
             .filter(item => item.unitPrice > 0);
           
