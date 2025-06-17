@@ -1,11 +1,24 @@
-import { Button, CircularProgress } from '@mui/material';
+import { Button } from '@mui/material';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 
+
+interface AwardedBid {
+  listingId: string;
+  oem: string;
+  sku: string;
+  prop65Warning: string;
+  description: string;
+  disposition: string;
+  quantity: number;
+  unitAwardedPrice: number;
+  fileName: string;
+}
+
 interface ReportPreviewProps {
-  sourceFileReports: Record<string, any[]>;
+  sourceFileReports: Record<string, AwardedBid[]>;
   processing: boolean;
   onGenerateReports: () => void;
-}
+};
 
 export const ReportPreview = ({
   sourceFileReports,

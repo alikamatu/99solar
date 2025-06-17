@@ -1,4 +1,4 @@
-// pages/Awarding.tsx
+// app/dashboard/awarding/page.tsx
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
@@ -10,14 +10,26 @@ import { FileUploader } from '@/app/_components/awarding/FileUploader';
 import { ReportPreview } from '@/app/_components/awarding/ReportPreview';
 import { SnackbarAlert } from '../components/SnackbarAlert';
 
+interface ReportData {
+  listingId: string;
+  oem: string;
+  sku: string;
+  description: string;
+  disposition: string;
+  quantity: number;
+  unitPrice: number;
+  unitAwardedPrice?: number;
+  fileName: string;
+}
+
 interface SavedReport {
   id: number;
   created_at: string;
   report_date: string;
-  report_data: any[];
+  report_data: ReportData[];
 }
 
-interface AwardedData {
+interface AwardedBid {
   listingId: string;
   oem: string;
   sku: string;
@@ -40,8 +52,22 @@ export default function Awarding() {
   const [historyDate, setHistoryDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
-  const [sourceFileReports, setSourceFileReports] = useState<Record<string, any[]>>({});
-  const [awardedDataMap, setAwardedDataMap] = useState<Record<string, any>>({});
+  const [sourceFileReports, setSourceFileReports] = useState<Record<string, AwardedBid[]>>({});
+
+  const showSnackbar = useCallback((
+    message: string, 
+    severity: 'success' | 'error' | 'warning' | 'info'
+  ) => {
+    setSnackbar({
+      open: true,
+      message,
+      severity
+    });
+  }, []);
+
+  const handleCloseSnackbar = useCallback(() => {
+    setSnackbar(prev => ({ ...prev, open: false }));
+  }, []);
 
   // Load saved reports from backend
   const loadSavedReports = useCallback(async () => {
@@ -65,7 +91,7 @@ export default function Awarding() {
     } finally {
       setLoadingHistory(false);
     }
-  }, [historyDate]);
+  }, [historyDate, showSnackbar]);
 
   // Process awarded CSV files
   const processAwardedFiles = useCallback(async () => {
@@ -83,27 +109,32 @@ export default function Awarding() {
     
     try {
       // Process all files and create a map of awarded data
-      const newAwardedDataMap: Record<string, any> = {};
+      const awardedDataMap: Record<string, AwardedBid> = {};
       for (const file of files) {
         const awardedItems = await parseCSV(file);
-        awardedItems.forEach((item: any) => {
+        awardedItems.forEach((item: Record<string, unknown>) => {
           const listingId = String(item['Listing Id']);
-          newAwardedDataMap[listingId] = {
-            ...item,
+          awardedDataMap[listingId] = {
+            listingId,
+            oem: String(item['OEM'] || ''),
+            sku: String(item['SKU'] || ''),
+            prop65Warning: String(item['Prop65 Warning'] || ''),
+            description: String(item['Description'] || ''),
+            disposition: String(item['Disposition'] || ''),
+            quantity: Number(item['Quantity']) || 0,
+            unitAwardedPrice: Number(item['Unit Awarded Price']) || 0,
             fileName: file.name
           };
         });
       }
-      setAwardedDataMap(newAwardedDataMap);
       
       // Create a map to group by source file
-      const sourceFileData: Record<string, any[]> = {};
+      const sourceFileData: Record<string, AwardedBid[]> = {};
       
       // Process all saved reports
       savedReports.forEach(report => {
         report.report_data.forEach(item => {
-          const listingId = item.listingId;
-          const awardedItem = newAwardedDataMap[listingId];
+          const awardedItem = awardedDataMap[item.listingId];
           
           if (awardedItem) {
             const sourceFile = item.fileName;
@@ -113,8 +144,15 @@ export default function Awarding() {
             }
             
             sourceFileData[sourceFile].push({
-              ...item,
-              ...awardedItem
+              listingId: item.listingId,
+              oem: item.oem,
+              sku: item.sku,
+              prop65Warning: awardedItem.prop65Warning ?? '',
+              description: item.description,
+              disposition: item.disposition,
+              quantity: item.quantity,
+              unitAwardedPrice: awardedItem.unitAwardedPrice,
+              fileName: item.fileName
             });
           }
         });
@@ -135,7 +173,7 @@ export default function Awarding() {
     } finally {
       setProcessing(false);
     }
-  }, [files, savedReports]);
+  }, [files, savedReports, showSnackbar]);
 
   // Generate XLSX reports for each source file
   const generateSourceFileReports = useCallback(() => {
@@ -155,7 +193,6 @@ export default function Awarding() {
           'Quantity': item.quantity,
           'Unit Awarded Price ($)': item.unitAwardedPrice,
           'Sales Customer': sourceFile,
-          // 'Original Report Date': item.reportDate || historyDate
         }));
         
         const { blob, fileName } = generateXLSX(formattedData, sourceFile, historyDate);
@@ -170,7 +207,7 @@ export default function Awarding() {
       console.error('Report generation error:', error);
       showSnackbar('Failed to generate reports', 'error');
     }
-  }, [sourceFileReports, historyDate]);
+  }, [sourceFileReports, historyDate, showSnackbar]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -178,21 +215,6 @@ export default function Awarding() {
       setFiles(prev => [...prev, ...newFiles]);
     }
   };
-
-  const showSnackbar = useCallback((
-    message: string, 
-    severity: 'success' | 'error' | 'warning' | 'info'
-  ) => {
-    setSnackbar({
-      open: true,
-      message,
-      severity
-    });
-  }, []);
-
-  const handleCloseSnackbar = useCallback(() => {
-    setSnackbar(prev => ({ ...prev, open: false }));
-  }, []);
 
   // Initialize by loading saved reports on date change
   useEffect(() => {
