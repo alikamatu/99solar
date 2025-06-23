@@ -1,12 +1,20 @@
 "use client";
 
+import { BidData } from '@/types/types';
+import { fetchTotalRevenue } from '@/utils/api';
 import { motion } from 'framer-motion';
 import Head from 'next/head';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 
 export default function Home() {
     const router = useRouter();
+  const [revenue, setRevenue] = useState(0);
+
+  useEffect(() => {
+    fetchTotalRevenue().then(setRevenue).catch(console.error);
+  }, []);
 
     const LightningIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}>
@@ -95,9 +103,11 @@ const getStarted = () => {
                     <div className="bg-green-100 p-2 rounded-full">
                       <CheckIcon className="h-5 w-5 text-green-600" />
                     </div>
-                    <div className="ml-3">
+                          <div className="ml-3">
                       <p className="font-medium">Bid processed!</p>
-                      <p className="text-sm text-gray-500">$5,428 generated</p>
+                      <p className="text-sm text-gray-500">
+                         ${revenue.toLocaleString()} generated
+                      </p>
                     </div>
                   </div>
                 </div>

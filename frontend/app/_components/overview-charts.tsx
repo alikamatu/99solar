@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -22,7 +23,33 @@ ChartJS.register(
   Legend
 );
 
+interface MonthlyStat {
+  month: string;
+  count: number;
+}
+
 export function OverviewChart() {
+  const [labels, setLabels] = useState<string[]>([]);
+  const [submittedData, setSubmittedData] = useState<number[]>([]);
+  const [awardedData, setAwardedData] = useState<number[]>([]);
+
+  useEffect(() => {
+    async function fetchStats() {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const res = await fetch(`${apiUrl}/api/reports/monthly-stats`);
+      if (!res.ok) return;
+      const stats = await res.json();
+
+      // Ensure months are aligned
+      const months = stats.submitted.map((row: MonthlyStat) => row.month);
+      setLabels(months);
+
+      setSubmittedData(stats.submitted.map((row: MonthlyStat) => Number(row.count)));
+      setAwardedData(stats.awarded.map((row: MonthlyStat) => Number(row.count)));
+    }
+    fetchStats();
+  }, []);
+
   const options = {
     responsive: true,
     plugins: {
@@ -32,20 +59,18 @@ export function OverviewChart() {
     },
   };
 
-  const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
-
   const data = {
     labels,
     datasets: [
       {
         label: 'Bids Submitted',
-        data: [65, 59, 80, 81, 56, 55, 40],
+        data: submittedData,
         borderColor: 'rgb(99, 102, 241)',
         backgroundColor: 'rgba(99, 102, 241, 0.5)',
       },
       {
         label: 'Bids Awarded',
-        data: [28, 48, 40, 19, 86, 27, 90],
+        data: awardedData,
         borderColor: 'rgb(16, 185, 129)',
         backgroundColor: 'rgba(16, 185, 129, 0.5)',
       },

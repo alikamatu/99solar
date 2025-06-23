@@ -83,4 +83,168 @@ router.get('/', async (req, res) => {
 //   }
 // });
 
+router.get('/revenue', async (req, res) => {
+  try {
+    // Get all reports
+    const result = await pool.query('SELECT report_data FROM reports');
+    let totalRevenue = 0;
+
+    result.rows.forEach(row => {
+      let reportData = row.report_data;
+      if (typeof reportData === 'string') {
+        try {
+          reportData = JSON.parse(reportData);
+        } catch {
+          reportData = [];
+        }
+      }
+      if (Array.isArray(reportData)) {
+        totalRevenue += reportData.reduce(
+          (sum, bid) => sum + (Number(bid.unitPrice) || 0),
+          0
+        );
+      }
+    });
+
+    res.json({ totalRevenue });
+  } catch (error) {
+    console.error('Error calculating revenue:', error);
+    res.status(500).json({ error: 'Failed to calculate revenue' });
+  }
+});
+
+router.get('/active-customers', async (req, res) => {
+  try {
+    // Fetch all report_data from reports
+    const result = await pool.query('SELECT report_data FROM reports');
+    const fileNames = new Set();
+
+    result.rows.forEach(row => {
+      let reportData = row.report_data;
+      if (typeof reportData === 'string') {
+        try { reportData = JSON.parse(reportData); } catch { reportData = []; }
+      }
+      if (Array.isArray(reportData)) {
+        reportData.forEach(bid => {
+          if (bid.fileName) {
+            fileNames.add(bid.fileName);
+          }
+        });
+      }
+    });
+
+    res.json({ customers: Array.from(fileNames) });
+  } catch (error) {
+    console.error('Error fetching customers:', error);
+    res.status(500).json({ error: 'Failed to fetch customers' });
+  }
+});
+
+router.get('/highest', async (req, res) => {
+  try {
+    // Get all reports
+    const result = await pool.query('SELECT report_data, created_at FROM reports');
+    let highestBid = null;
+
+    result.rows.forEach(row => {
+      let reportData = row.report_data;
+      if (typeof reportData === 'string') {
+        try {
+          reportData = JSON.parse(reportData);
+        } catch {
+          reportData = [];
+        }
+      }
+      if (Array.isArray(reportData)) {
+        reportData.forEach(bid => {
+          const unitPrice = Number(bid.unitPrice);
+          if (!isNaN(unitPrice)) {
+            if (!highestBid || unitPrice > highestBid.amount) {
+              highestBid = {
+                amount: unitPrice,
+                description: bid.description || null,
+                date: row.created_at,
+              };
+            }
+          }
+        });
+      }
+    });
+
+    if (!highestBid) return res.json({});
+    res.json(highestBid);
+  } catch (error) {
+    console.error('Error fetching highest bid:', error);
+    res.status(500).json({ error: 'Failed to fetch highest bid' });
+  }
+});
+
+router.get('/monthly-stats', async (req, res) => {
+  try {
+    // Count reports per month for the last 12 months
+    const reports = await pool.query(`
+      SELECT 
+        TO_CHAR(report_date, 'Mon') AS month,
+        DATE_TRUNC('month', report_date) AS month_start,
+        COUNT(*) AS count
+      FROM reports
+      GROUP BY month, month_start
+      ORDER BY month_start DESC
+      LIMIT 12
+    `);
+
+    res.json({
+      submitted: reports.rows,
+      awarded: reports.rows,
+    });
+  } catch (error) {
+    console.error('Error fetching monthly stats:', error);
+    res.status(500).json({ error: 'Failed to fetch monthly stats' });
+  }
+});
+
+router.get('/recent-activities', async (req, res) => {
+  try {
+    // Get the latest 10 reports
+    const result = await pool.query(
+      `SELECT id, created_at, report_date, report_data 
+       FROM reports 
+       ORDER BY created_at DESC 
+       LIMIT 10`
+    );
+
+    // Flatten activities from report_data
+    const activities = [];
+    result.rows.forEach(report => {
+      let reportData = report.report_data;
+      if (typeof reportData === 'string') {
+        try { reportData = JSON.parse(reportData); } catch { reportData = []; }
+      }
+      if (Array.isArray(reportData)) {
+        reportData.forEach(bid => {
+          activities.push({
+            type: 'bid',
+            description: `Bid for ${bid.description || bid.sku || 'item'}`,
+            date: report.created_at,
+            fileName: bid.fileName,
+          });
+        });
+      }
+      // Add a report-level activity
+      activities.push({
+        type: 'report',
+        description: `Processed report for ${report.report_date}`,
+        date: report.created_at,
+      });
+    });
+
+    // Sort by date descending and limit to 10
+    activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+    res.json(activities.slice(0, 10));
+  } catch (error) {
+    console.error('Error fetching recent activities:', error);
+    res.status(500).json({ error: 'Failed to fetch recent activities' });
+  }
+});
+
 module.exports = router;

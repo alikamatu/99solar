@@ -1,59 +1,49 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { FileText, Upload, Award, CheckCircle } from 'lucide-react';
+import { fetchRecentActivities } from '@/utils/api';
 
-const activities = [
-  {
-    id: 1,
-    type: 'file',
-    description: 'Processed Verizon CSV file',
-    date: new Date('2023-07-01T10:30:00'),
-    icon: FileText,
-    color: 'text-blue-500',
-  },
-  {
-    id: 2,
-    type: 'submission',
-    description: 'Submitted bids to Verizon',
-    date: new Date('2023-07-01T14:45:00'),
-    icon: Upload,
-    color: 'text-purple-500',
-  },
-  {
-    id: 3,
-    type: 'award',
-    description: 'Received awards from Verizon',
-    date: new Date('2023-06-30T09:15:00'),
-    icon: Award,
-    color: 'text-green-500',
-  },
-  {
-    id: 4,
-    type: 'invoice',
-    description: 'Generated 5 customer invoices',
-    date: new Date('2023-06-29T16:20:00'),
-    icon: CheckCircle,
-    color: 'text-yellow-500',
-  },
-];
+const iconMap = {
+  report: FileText,
+  bid: Upload,
+  award: Award,
+  invoice: CheckCircle,
+};
 
 export function RecentActivity() {
+
+  type ActivityType = keyof typeof iconMap;
+  interface Activity {
+    type: ActivityType;
+    description: string;
+    date: string;
+    [key: string]: any;
+  }
+  const [activities, setActivities] = useState<Activity[]>([]);
+  useEffect(() => {
+    fetchRecentActivities().then(setActivities).catch(console.error);
+  }, []);
+
   return (
     <div className="space-y-4">
-      {activities.map((activity) => (
-        <div key={activity.id} className="flex items-start">
-          <div className={`flex-shrink-0 ${activity.color}`}>
-            <activity.icon className="w-5 h-5" />
+      {activities.map((activity, idx) => {
+        const Icon = iconMap[activity.type] || FileText;
+        return (
+          <div key={idx} className="flex items-start">
+            <div className="flex-shrink-0 text-blue-500">
+              <Icon className="w-5 h-5" />
+            </div>
+            <div className="ml-3 space-y-0.5">
+              <p className="text-sm font-medium">{activity.description}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {format(new Date(activity.date), 'MMM d, h:mm a')}
+              </p>
+            </div>
           </div>
-          <div className="ml-3 space-y-0.5">
-            <p className="text-sm font-medium">{activity.description}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              {format(activity.date, 'MMM d, h:mm a')}
-            </p>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
