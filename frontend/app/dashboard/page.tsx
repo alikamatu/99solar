@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { Users, DollarSign, Gavel, Upload } from 'lucide-react';
+import { Users, DollarSign, Gavel } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { OverviewChart } from '../_components/overview-charts';
 import { RecentActivity } from '../_components/recent-activity';
@@ -15,7 +15,7 @@ export default function DashboardPage() {
     { title: 'Highest Bid', value: '...', icon: DollarSign, change: '' },
     { title: 'Monthly Revenue', value: '...', icon: DollarSign, change: '' },
   ]);
-  const [fileName, setFileName] = useState('example.xlsx'); // Set this dynamically as needed
+  const [fileName] = useState('example.xlsx'); // Set this dynamically as needed
 
   useEffect(() => {
     Promise.all([

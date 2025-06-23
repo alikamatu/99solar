@@ -13,15 +13,17 @@ const iconMap = {
 };
 
 export function RecentActivity() {
+  const [activities, setActivities] = useState<Activity[]>([]);
 
   type ActivityType = keyof typeof iconMap;
+
   interface Activity {
     type: ActivityType;
     description: string;
     date: string;
-    [key: string]: any;
+    fileName?: string;
   }
-  const [activities, setActivities] = useState<Activity[]>([]);
+  
   useEffect(() => {
     fetchRecentActivities().then(setActivities).catch(console.error);
   }, []);

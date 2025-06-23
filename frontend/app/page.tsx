@@ -1,6 +1,5 @@
 "use client";
 
-import { BidData } from '@/types/types';
 import { fetchTotalRevenue } from '@/utils/api';
 import { motion } from 'framer-motion';
 import Head from 'next/head';
